@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Restricted - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --danger: #ef4444;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(226,232,240,0.8);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fef2f2 0%, #fff7ed 50%, #f0f4f9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .restriction-card {
+            max-width: 580px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(24px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .card-top-banner {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            padding: 2.5rem 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-top-banner::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        .card-top-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -30px;
+            width: 220px; height: 220px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+        .restriction-icon {
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.25rem;
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(255,255,255,0.2);
+            position: relative; z-index: 1;
+        }
+        .restriction-icon i { font-size: 2rem; color: white; }
+        .banner-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: white;
+            position: relative; z-index: 1;
+        }
+        .card-body-section {
+            padding: 2rem 2.5rem 2.5rem;
+        }
+        .message-box {
+            background: #fef2f2;
+            border: 1.5px solid #fecaca;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .message-box p {
+            color: #7f1d1d;
+            font-size: 1rem;
+            line-height: 1.65;
+            margin: 0;
+        }
+        .info-list { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+        .info-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .info-list li:last-child { border-bottom: none; }
+        .info-list li i { color: var(--danger); font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .info-list li strong { color: var(--text-dark); }
+        .enrollment-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 4px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .btn-back {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 0.7rem 1.5rem;
+            font-size: 0.9rem;
+            background: #0f172a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-back:hover { background: #1e293b; color: white; transform: translateY(-1px); }
+        .btn-logout {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 0.7rem 1.5rem;
+            font-size: 0.9rem;
+            background: transparent;
+            color: var(--danger);
+            border: 2px solid rgba(239,68,68,0.2);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-logout:hover { background: #fef2f2; border-color: var(--danger); color: var(--danger); }
+        .footer-note {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="restriction-card">
+    <!-- Top Banner -->
+    <div class="card-top-banner">
+        <div class="restriction-icon">
+            <i class="bi bi-shield-x-fill"></i>
+        </div>
+        <div class="banner-title">Access Restricted</div>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body-section">
+        <!-- Enrollment badge -->
+        <div class="enrollment-badge" th:if="${enrollmentNo != null}">
+            <i class="bi bi-person-fill"></i>
+            <span th:text="${enrollmentNo}">240045012101</span>
+        </div>
+
+        <!-- Core message -->
+        <div class="message-box">
+            <p>
+                <strong>You are not included in the approved student eligibility list for this examination.</strong><br>
+                Please contact the examination administrator to resolve this issue.
+            </p>
+        </div>
+
+        <!-- Exam name if available -->
+        <div class="mb-3" th:if="${examName != null}">
+            <p style="font-size:13px; color:var(--text-muted);">
+                <i class="bi bi-journal-text me-1"></i>
+                Attempting to access: <strong th:text="${examName}" style="color:var(--text-dark);">Examination Name</strong>
+            </p>
+        </div>
+
+        <!-- What this means -->
+        <ul class="info-list">
+            <li>
+                <i class="bi bi-x-circle-fill"></i>
+                <span>The <strong>Rules Page</strong> will not be displayed to you.</span>
+            </li>
+            <li>
+                <i class="bi bi-x-circle-fill"></i>
+                <span>The <strong>Start Exam button</strong> is not accessible.</span>
+            </li>
+            <li>
+                <i class="bi bi-x-circle-fill"></i>
+                <span><strong>Exam Questions</strong> are blocked for your enrollment number.</span>
+            </li>
+            <li>
+                <i class="bi bi-info-circle-fill" style="color:#3b82f6;"></i>
+                <span>If you believe this is an error, please contact your <strong>Examination Administrator</strong> immediately.</span>
+            </li>
+        </ul>
+
+        <!-- Actions -->
+        <div class="actions">
+            <a th:href="@{/student/rules}" class="btn-back"><i class="bi bi-arrow-left"></i>Go Back</a>
+            <a th:href="@{/student/logout}" class="btn-logout"><i class="bi bi-box-arrow-right"></i>Sign Out</a>
+        </div>
+
+        <div class="footer-note">
+            If you have questions, contact your examination administrator with your Enrollment Number.
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

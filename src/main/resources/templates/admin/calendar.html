@@ -1,0 +1,2988 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamDB Calendar &amp; Scheduler — Admin Portal</title>
+    <!-- Bootstrap 5.3 CSS for layout compatibility -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- React & ReactDOM UMD -->
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel compiler for inline JSX compiling -->
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+    <script>
+        Babel.registerPreset("custom-react", {
+            presets: [
+                [Babel.availablePresets["react"], { runtime: "classic" }],
+                Babel.availablePresets["env"]
+            ]
+        });
+    </script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Inter + DM Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== PREMIUM DARK DESIGN SYSTEM ===== */
+        :root {
+            --sidebar-width: 270px;
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'DM Mono', monospace;
+
+            /* Brand colors */
+            --c-bg:          #0a0a0f;
+            --c-surface-1:   #0f0f1a;
+            --c-surface-2:   #141428;
+            --c-surface-3:   #1a1a35;
+            --c-border:      rgba(99,102,241,0.12);
+            --c-border-bright: rgba(99,102,241,0.28);
+            --c-accent:      #6366f1;
+            --c-accent-2:    #8b5cf6;
+            --c-accent-glow: rgba(99,102,241,0.18);
+            --c-text-1:      #f0f0ff;
+            --c-text-2:      #a5a8d4;
+            --c-text-3:      #5a5d80;
+
+            /* Event category colors */
+            --c-exams:       #6366f1;
+            --c-admin:       #3b82f6;
+            --c-holidays:    #10b981;
+            --c-tasks:       #f59e0b;
+            --c-birthdays:   #ec4899;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            background-color: #f8f9fa;
+            color: #1e2030;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body.dark-theme {
+            background-color: var(--c-bg);
+            color: var(--c-text-1);
+        }
+
+        /* ---- Prevent Bootstrap button color overrides ---- */
+        #react-calendar-root button:not([class*="text-"]) {
+            color: inherit;
+        }
+
+        /* ---- Calendar picker indicators in dark mode ---- */
+        .dark-theme input[type="date"]::-webkit-calendar-picker-indicator,
+        .dark-theme input[type="time"]::-webkit-calendar-picker-indicator,
+        .dark input[type="date"]::-webkit-calendar-picker-indicator,
+        .dark input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.7;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+        }
+        .dark-theme input[type="date"]::-webkit-calendar-picker-indicator:hover,
+        .dark-theme input[type="time"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        /* ---- Spring Boot sidebar integration ---- */
+        .sidebar {
+            width: var(--sidebar-width) !important;
+            min-width: var(--sidebar-width) !important;
+            max-width: var(--sidebar-width) !important;
+            flex-shrink: 0;
+        }
+
+        /* ---- Premium thin scrollbar ---- */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99,102,241,0.2);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99,102,241,0.4);
+        }
+
+        /* ---- Glassmorphism card base ---- */
+        .glass {
+            background: rgba(20,20,40,0.6);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid var(--c-border-bright);
+        }
+        .glass-light {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        /* ---- Accent glow ring for today ---- */
+        .today-ring {
+            background: var(--c-accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.35);
+        }
+
+        /* ---- Event pill animations ---- */
+        .event-pill {
+            transition: opacity 0.15s ease, transform 0.1s ease;
+        }
+        .event-pill:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+
+        /* ---- Cell hover glow ---- */
+        .day-cell:hover {
+            background: rgba(99,102,241,0.04);
+        }
+        .dark-theme .day-cell:hover {
+            background: rgba(99,102,241,0.07);
+        }
+
+        /* ---- Smooth modal backdrop ---- */
+        .modal-backdrop-premium {
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(6px);
+        }
+
+        /* ---- View toggle button group ---- */
+        .view-btn {
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            border: 1px solid transparent;
+        }
+        .view-btn.active {
+            background: var(--c-accent);
+            color: white;
+            box-shadow: 0 0 14px rgba(99,102,241,0.5);
+        }
+        .view-btn:not(.active) {
+            color: #6b7280;
+        }
+        .dark-theme .view-btn:not(.active) {
+            color: #6b7280;
+        }
+        .view-btn:not(.active):hover {
+            background: rgba(99,102,241,0.1);
+            color: var(--c-accent);
+        }
+
+        /* ---- Input checkbox cursor ---- */
+        input[type="checkbox"] { cursor: pointer; }
+
+        /* ---- Animate fade-in for modals ---- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-modal { animation: fadeInUp 0.2s ease forwards; }
+
+        /* ---- Accent gradient text ---- */
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ---- Header glow line ---- */
+        .topbar-glow {
+            border-bottom: 1px solid rgba(99,102,241,0.15);
+            box-shadow: 0 1px 24px rgba(99,102,241,0.08);
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cal: {
+                            bg:       '#0a0a0f',
+                            s1:       '#0f0f1a',
+                            s2:       '#141428',
+                            s3:       '#1a1a35',
+                            border:   'rgba(99,102,241,0.12)',
+                            borderHi: 'rgba(99,102,241,0.28)',
+                            accent:   '#6366f1',
+                            accent2:  '#8b5cf6',
+                            glow:     'rgba(99,102,241,0.18)',
+                            t1:       '#f0f0ff',
+                            t2:       '#a5a8d4',
+                            t3:       '#5a5d80',
+                            exams:    '#6366f1',
+                            admin:    '#3b82f6',
+                            holidays: '#10b981',
+                            tasks:    '#f59e0b',
+                            births:   '#ec4899',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['DM Mono', 'monospace'],
+                    },
+                    borderWidth: { '0.5': '0.5px' },
+                    boxShadow: {
+                        'glow-sm': '0 0 12px rgba(99,102,241,0.25)',
+                        'glow-md': '0 0 24px rgba(99,102,241,0.35)',
+                        'glow-lg': '0 0 48px rgba(99,102,241,0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white dark-theme:bg-[#1a1a1a] transition-colors duration-150">
+
+<div class="d-flex">
+    <!-- Sidebar Fragment from Spring Boot Thymeleaf -->
+    <div th:replace="~{admin/fragments :: sidebar('calendar')}"></div>
+
+    <!-- Main Workspace where our React application mounts -->
+    <main class="flex-grow-1 p-0" style="margin-left: var(--sidebar-width); height: 100vh; overflow: hidden; position: relative;">
+        <div id="react-calendar-root" class="h-100 w-100"></div>
+        <div id="error-fallback" class="p-5 font-monospace text-danger bg-white dark:bg-[#1a1a1a]" style="display:none; white-space:pre-wrap; z-index:9999; position:absolute; top:0; left:0; right:0; bottom:0; overflow:auto;">
+            <h3 class="mb-3 text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Application Load Error</h3>
+            <p class="text-secondary mb-4">A JavaScript error occurred while rendering the Google Calendar application:</p>
+            <pre id="error-details" class="p-3 bg-light text-dark rounded border"></pre>
+        </div>
+    </main>
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const fallback = document.getElementById('error-fallback');
+            const details = document.getElementById('error-details');
+            if (fallback && details) {
+                fallback.style.display = 'block';
+                details.textContent += `\nError: ${message}\nSource: ${source}:${lineno}:${colno}\nStack: ${error ? error.stack : 'N/A'}\n`;
+            }
+            return false;
+        };
+        window.addEventListener('unhandledrejection', function(event) {
+            const fallback = document.getElementById('error-fallback');
+            const details = document.getElementById('error-details');
+            if (fallback && details) {
+                fallback.style.display = 'block';
+                details.textContent += `\nUnhandled Promise Rejection: ${event.reason}\nStack: ${event.reason ? event.reason.stack : 'N/A'}\n`;
+            }
+        });
+    </script>
+</div>
+
+<!-- Inline Thymeleaf variables injected into window globals -->
+<script th:inline="javascript">
+    window.loggedInAdminName = [[${adminName}]];
+    window.allAdminsList = [[${allAdmins}]];
+</script>
+
+<!-- React Main Application Code (using Babel standalone for JSX wrapped in CDATA for Thymeleaf parser protection) -->
+<script type="text/babel" data-presets="custom-react">
+/*<![CDATA[*/
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+    // --- NATIVE DATE HELPERS (no external library requirement) ---
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const weekdayNamesShort = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+    const dateHelpers = {
+        isSameDay(d1, d2) {
+            if (!d1 || !d2) return false;
+            return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+        },
+        isToday(d) {
+            return this.isSameDay(d, new Date());
+        },
+        isSameMonth(d1, d2) {
+            if (!d1 || !d2) return false;
+            return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth();
+        },
+        startOfMonth(d) {
+            return new Date(d.getFullYear(), d.getMonth(), 1);
+        },
+        endOfMonth(d) {
+            return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        },
+        startOfWeek(d) {
+            const day = d.getDay();
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate() - day);
+        },
+        endOfWeek(d) {
+            const day = d.getDay();
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate() + (6 - day));
+        },
+        addMonths(d, n) {
+            return new Date(d.getFullYear(), d.getMonth() + n, 1);
+        },
+        subMonths(d, n) {
+            return new Date(d.getFullYear(), d.getMonth() - n, 1);
+        },
+        addWeeks(d, n) {
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n * 7);
+        },
+        subWeeks(d, n) {
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate() - n * 7);
+        },
+        addDays(d, n) {
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+        },
+        subDays(d, n) {
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate() - n);
+        },
+        eachDayOfInterval(start, end) {
+            const days = [];
+            let current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            const stop = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+            while (current <= stop) {
+                days.push(new Date(current));
+                current.setDate(current.getDate() + 1);
+            }
+            return days;
+        },
+        differenceInMinutes(d1, d2) {
+            return Math.round((d1.getTime() - d2.getTime()) / 60000);
+        },
+        format(date, pattern) {
+            if (pattern === 'MMMM yyyy') {
+                return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            }
+            if (pattern === 'MMM') {
+                return monthNames[date.getMonth()].substring(0, 3);
+            }
+            if (pattern === 'd') {
+                return `${date.getDate()}`;
+            }
+            if (pattern === 'EEEE') {
+                const longWeekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                return longWeekdays[date.getDay()];
+            }
+            if (pattern === 'EEEE, MMMM d') {
+                return `${this.format(date, 'EEEE')}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
+            }
+            if (pattern === 'EEE') {
+                return weekdayNamesShort[date.getDay()];
+            }
+            if (pattern === 'HH:mm') {
+                return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+            }
+            if (pattern === 'hh:mm a') {
+                let hours = date.getHours();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+            }
+            return date.toDateString();
+        }
+    };
+
+    // --- BACKEND ROOM INJECTION & EXTRACTOR UTILITIES ---
+    const parseRoomFromDescription = (desc) => {
+        if (!desc) return '';
+        const match = desc.match(/\[Room:\s*(.*?)\]/);
+        return match ? match[1] : '';
+    };
+
+    const cleanDescription = (desc) => {
+        if (!desc) return '';
+        return desc.replace(/\[Room:\s*(.*?)\]/, '').trim();
+    };
+
+    const getEventCategory = (e) => {
+        if (!e) return 'admin';
+        const type = e.eventType?.toLowerCase();
+        const catName = e.category?.toLowerCase();
+        if (type === 'holiday' || catName === 'holiday' || catName === 'holidays') return 'holidays';
+        if (type === 'exam' || catName === 'exams' || catName === 'exam') return 'exams';
+        if (catName === 'birthdays' || catName === 'birthday') return 'birthdays';
+        if (type === 'task' || catName === 'tasks' || catName === 'task') return 'tasks';
+        return 'admin';
+    };
+
+    // --- AI CONFLICT AUDITING HELPER ---
+    const detectConflicts = (events) => {
+        const conflictsMap = {};
+        const globalConflicts = [];
+
+        events.forEach(e => {
+            conflictsMap[e.id] = [];
+        });
+
+        const sortedEvents = [...events].sort(
+            (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+        );
+
+        for (let i = 0; i < sortedEvents.length; i++) {
+            const eventA = sortedEvents[i];
+            const startA = new Date(eventA.start);
+            const endA = new Date(eventA.end);
+
+            for (let j = i + 1; j < sortedEvents.length; j++) {
+                const eventB = sortedEvents[j];
+                const startB = new Date(eventB.start);
+                const endB = new Date(eventB.end);
+
+                // Check overlap
+                const isOverlapping = startA < endB && startB < endA;
+
+                if (isOverlapping) {
+                    // Overlap Warning
+                    const overlapMsg = `Overlapping events: "${eventA.title}" and "${eventB.title}"`;
+                    conflictsMap[eventA.id].push({ type: 'overlap', message: overlapMsg, peerId: eventB.id });
+                    conflictsMap[eventB.id].push({ type: 'overlap', message: overlapMsg, peerId: eventA.id });
+
+                    globalConflicts.push({
+                        id: `overlap-${eventA.id}-${eventB.id}`,
+                        type: 'overlap',
+                        description: overlapMsg,
+                        eventIds: [eventA.id, eventB.id],
+                        date: startA
+                    });
+
+                    // Room Double Booking Warning
+                    if (
+                        eventA.room &&
+                        eventB.room &&
+                        eventA.room.trim() !== '' &&
+                        eventA.room.trim().toLowerCase() === eventB.room.trim().toLowerCase()
+                    ) {
+                        const roomMsg = `Room "${eventA.room}" double-booked for "${eventA.title}" and "${eventB.title}"`;
+                        conflictsMap[eventA.id].push({ type: 'room-booking', message: roomMsg, peerId: eventB.id });
+                        conflictsMap[eventB.id].push({ type: 'room-booking', message: roomMsg, peerId: eventA.id });
+
+                        globalConflicts.push({
+                            id: `room-${eventA.id}-${eventB.id}`,
+                            type: 'room-booking',
+                            description: roomMsg,
+                            eventIds: [eventA.id, eventB.id],
+                            date: startA
+                        });
+                    }
+                } else {
+                    // Back-to-back Exam Warning (only if both are Exams)
+                    if (
+                        eventA.category?.toLowerCase() === 'exams' &&
+                        eventB.category?.toLowerCase() === 'exams'
+                    ) {
+                        const bufferMinutes = Math.abs(dateHelpers.differenceInMinutes(startB, endA));
+                        if (bufferMinutes < 30) {
+                            const examMsg = `Back-to-back exams ("${eventA.title}" and "${eventB.title}") have less than 30m buffer (${bufferMinutes} mins)`;
+                            conflictsMap[eventA.id].push({ type: 'exam-buffer', message: examMsg, peerId: eventB.id });
+                            conflictsMap[eventB.id].push({ type: 'exam-buffer', message: examMsg, peerId: eventA.id });
+
+                            globalConflicts.push({
+                                id: `exam-${eventA.id}-${eventB.id}`,
+                                type: 'exam-buffer',
+                                description: examMsg,
+                                eventIds: [eventA.id, eventB.id],
+                                date: startA
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return { conflictsMap, globalConflicts };
+    };
+
+    // --- COMPONENT: TOPBAR ---
+    function Topbar({
+        currentDate,
+        onNavigateToday,
+        onNavigatePrev,
+        onNavigateNext,
+        currentView,
+        setCurrentView,
+        sidebarOpen,
+        setSidebarOpen,
+        searchQuery,
+        setSearchQuery,
+        darkMode,
+        setDarkMode,
+        categoryFilters,
+        setCategoryFilters
+    }) {
+        const handleThemeToggle = () => {
+            setDarkMode(prev => !prev);
+        };
+
+        return (
+            <header className={`h-[60px] flex items-center justify-between px-4 select-none z-30 flex-shrink-0 topbar-glow ${darkMode ? 'bg-[#0a0a0f]' : 'bg-white border-b border-gray-100'}`}>
+                {/* Left: Hamburger + Logo */}
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className={`p-2 rounded-lg transition-all duration-150 cursor-pointer ${darkMode ? 'hover:bg-white/5 text-[#a5a8d4]' : 'hover:bg-gray-100 text-gray-500'}`}
+                    >
+                        <i className="bi bi-list" style={{fontSize:'18px'}}></i>
+                    </button>
+
+                    <div className="flex items-center gap-2.5">
+                        {/* Premium gradient logo badge */}
+                        <div className="relative w-9 h-9 flex items-center justify-center rounded-xl overflow-hidden" style={{background:'linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)',boxShadow:'0 0 16px rgba(99,102,241,0.45)'}}>
+                            <span className="text-[9px] font-bold uppercase absolute top-[5px] leading-none text-white/90">
+                                {dateHelpers.format(currentDate, 'MMM')}
+                            </span>
+                            <span className="text-[15px] font-extrabold absolute bottom-[3px] leading-none text-white">
+                                {dateHelpers.format(currentDate, 'd')}
+                            </span>
+                        </div>
+                        <div className="flex flex-col leading-tight">
+                            <span className={`text-[15px] font-semibold tracking-tight ${darkMode ? 'text-[#f0f0ff]' : 'text-gray-900'}`}>
+                                Calendar
+                            </span>
+                            <span className={`text-[10px] font-medium ${darkMode ? 'text-[#5a5d80]' : 'text-gray-400'}`}>
+                                Admin Scheduler
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Center: Nav + Title */}
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={onNavigateToday}
+                        className={`px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-150 cursor-pointer border ${
+                            darkMode
+                                ? 'border-[rgba(99,102,241,0.3)] text-[#a5a8d4] hover:bg-[rgba(99,102,241,0.1)] hover:text-[#f0f0ff] hover:border-[rgba(99,102,241,0.5)]'
+                                : 'border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200'
+                        }`}
+                    >
+                        Today
+                    </button>
+
+                    <div className={`flex items-center gap-0.5 rounded-lg p-0.5 ${darkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+                        <button
+                            onClick={onNavigatePrev}
+                            className={`p-1.5 rounded-md transition-all duration-150 cursor-pointer ${darkMode ? 'hover:bg-white/8 text-[#a5a8d4] hover:text-[#f0f0ff]' : 'hover:bg-white text-gray-500 hover:text-gray-800'}`}
+                        >
+                            <i className="bi bi-chevron-left text-sm"></i>
+                        </button>
+                        <button
+                            onClick={onNavigateNext}
+                            className={`p-1.5 rounded-md transition-all duration-150 cursor-pointer ${darkMode ? 'hover:bg-white/8 text-[#a5a8d4] hover:text-[#f0f0ff]' : 'hover:bg-white text-gray-500 hover:text-gray-800'}`}
+                        >
+                            <i className="bi bi-chevron-right text-sm"></i>
+                        </button>
+                    </div>
+
+                    <h1 className={`text-[20px] font-bold tracking-tight min-w-[200px] ${darkMode ? 'text-[#f0f0ff]' : 'text-gray-900'}`}>
+                        {dateHelpers.format(currentDate, 'MMMM yyyy')}
+                    </h1>
+                </div>
+
+                {/* Search */}
+                <div className="flex-1 max-w-sm mx-6">
+                    <div className={`relative flex items-center rounded-xl transition-all duration-200 ${
+                        darkMode
+                            ? 'bg-white/5 border border-[rgba(99,102,241,0.15)] focus-within:border-[rgba(99,102,241,0.45)] focus-within:bg-white/8'
+                            : 'bg-gray-50 border border-gray-200 focus-within:border-indigo-300 focus-within:bg-white'
+                    }`}>
+                        <i className={`bi bi-search absolute left-3 text-sm ${darkMode ? 'text-[#5a5d80]' : 'text-gray-400'}`}></i>
+                        <input
+                            type="text"
+                            placeholder="Search exams, events..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className={`w-full h-9 pl-9 pr-4 bg-transparent outline-none text-[13px] ${darkMode ? 'text-[#f0f0ff] placeholder-[#5a5d80]' : 'text-gray-800 placeholder-gray-400'}`}
+                        />
+                    </div>
+                </div>
+
+                {/* Right actions */}
+                <div className="flex items-center gap-1.5">
+                    {/* View selector as pill buttons */}
+                    <div className={`flex items-center rounded-xl p-1 gap-0.5 ${darkMode ? 'bg-white/5 border border-[rgba(99,102,241,0.12)]' : 'bg-gray-100'}`}>
+                        {['month','week','day'].map(v => (
+                            <button
+                                key={v}
+                                onClick={() => setCurrentView(v)}
+                                className={`view-btn capitalize ${currentView === v ? 'active' : ''} cursor-pointer`}
+                            >
+                                {v}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Tasks toggle */}
+                    <button
+                        className={`p-2 rounded-lg transition-all duration-150 cursor-pointer ${
+                            categoryFilters.tasks
+                                ? 'text-amber-400 bg-amber-400/10'
+                                : darkMode ? 'text-[#5a5d80] hover:text-[#a5a8d4] hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                        }`}
+                        onClick={() => setCategoryFilters(prev => ({ ...prev, tasks: !prev.tasks }))}
+                        title="Toggle Tasks Visibility"
+                    >
+                        <i className="bi bi-check2-circle" style={{fontSize:'16px'}}></i>
+                    </button>
+
+                    {/* Theme toggle */}
+                    <button
+                        onClick={handleThemeToggle}
+                        className={`p-2 rounded-lg transition-all duration-150 cursor-pointer ${darkMode ? 'text-amber-400 bg-amber-400/10 hover:bg-amber-400/15' : 'text-slate-500 hover:bg-gray-100'}`}
+                        title={darkMode ? 'Light Mode' : 'Dark Mode'}
+                    >
+                        {darkMode
+                            ? <i className="bi bi-sun-fill" style={{fontSize:'15px'}}></i>
+                            : <i className="bi bi-moon-fill" style={{fontSize:'14px'}}></i>
+                        }
+                    </button>
+
+                    <a
+                        href="/admin/settings"
+                        className={`p-2 rounded-lg transition-all duration-150 cursor-pointer ${darkMode ? 'text-[#5a5d80] hover:text-[#a5a8d4] hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                        title="Settings"
+                    >
+                        <i className="bi bi-sliders" style={{fontSize:'15px'}}></i>
+                    </a>
+                </div>
+            </header>
+        );
+    }
+
+    // --- COMPONENT: SIDEBAR ---
+    function Sidebar({
+        events = [],
+        currentDate,
+        setCurrentDate,
+        categoryFilters,
+        setCategoryFilters,
+        conflictCheckOpen,
+        setConflictCheckOpen,
+        globalConflicts,
+        onCreateEventClick,
+        adminName,
+        allAdmins = [],
+        visibleAdmins = {},
+        setVisibleAdmins
+    }) {
+        const [miniMonth, setMiniMonth] = useState(dateHelpers.startOfMonth(currentDate));
+        const [myCalsExpanded, setMyCalsExpanded] = useState(true);
+        const [otherCalsExpanded, setOtherCalsExpanded] = useState(true);
+
+        useEffect(() => {
+            setMiniMonth(dateHelpers.startOfMonth(currentDate));
+        }, [currentDate]);
+
+        const miniCalDays = useMemo(() => {
+            const monthStart = dateHelpers.startOfMonth(miniMonth);
+            const monthEnd = dateHelpers.endOfMonth(monthStart);
+            const startDate = dateHelpers.startOfWeek(monthStart);
+            const endDate = dateHelpers.endOfWeek(monthEnd);
+            return dateHelpers.eachDayOfInterval(startDate, endDate);
+        }, [miniMonth]);
+
+        const handleCategoryToggle = (key) => {
+            setCategoryFilters(prev => ({
+                ...prev,
+                [key]: !prev[key]
+            }));
+        };
+
+        // --- Helper for category color dot ---
+        const catColors = {
+            admin:     { on: '#3b82f6', off: 'transparent' },
+            birthdays: { on: '#ec4899', off: 'transparent' },
+            tasks:     { on: '#f59e0b', off: 'transparent' },
+            holidays:  { on: '#10b981', off: 'transparent' },
+            exams:     { on: '#6366f1', off: 'transparent' },
+        };
+        const CheckBox = ({ checked, color, onChange, label }) => (
+            <label className="flex items-center gap-3 px-2 py-1.5 rounded-lg cursor-pointer group transition-all duration-150 hover:bg-[rgba(99,102,241,0.06)]">
+                <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
+                <div className="relative w-3.5 h-3.5 rounded-[3px] flex-shrink-0 flex items-center justify-center border-2 transition-all duration-150"
+                    style={{
+                        borderColor: checked ? color : 'rgba(100,100,120,0.4)',
+                        background: checked ? color : 'transparent',
+                    }}>
+                    {checked && <i className="bi bi-check-lg text-white" style={{fontSize:'8px'}}></i>}
+                </div>
+                <span className="text-[13px] font-medium text-gray-700 dark:text-[#c4c7e8] group-hover:text-gray-900 dark:group-hover:text-[#f0f0ff] transition-colors">{label}</span>
+            </label>
+        );
+
+        return (
+            <aside className={`w-64 flex flex-col h-full flex-shrink-0 select-none pb-4 overflow-y-auto border-r transition-colors ${
+                'bg-white dark:bg-[#0f0f1a] border-[#e8e9f0] dark:border-[rgba(99,102,241,0.12)]'
+            }`}>
+                {/* CREATE button */}
+                <div className="p-4 pt-5">
+                    <button
+                        onClick={onCreateEventClick}
+                        className="w-full flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl font-semibold text-[13px] cursor-pointer transition-all duration-200"
+                        style={{
+                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                            color: 'white',
+                            boxShadow: '0 0 20px rgba(99,102,241,0.4)',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.boxShadow='0 0 28px rgba(99,102,241,0.6)'}
+                        onMouseLeave={e => e.currentTarget.style.boxShadow='0 0 20px rgba(99,102,241,0.4)'}
+                    >
+                        <i className="bi bi-plus-circle-fill text-white/90" style={{fontSize:'14px'}}></i>
+                        <span>New Event</span>
+                    </button>
+                </div>
+
+                {/* Mini Calendar */}
+                <div className="px-3 py-1">
+                    {/* Mini cal header */}
+                    <div className="flex items-center justify-between px-1 mb-2">
+                        <span className="text-[12px] font-bold text-gray-700 dark:text-[#a5a8d4] tracking-wide">
+                            {dateHelpers.format(miniMonth, 'MMMM yyyy')}
+                        </span>
+                        <div className="flex items-center gap-0.5">
+                            <button
+                                onClick={() => setMiniMonth(dateHelpers.subMonths(miniMonth, 1))}
+                                className="p-1 rounded-lg hover:bg-[rgba(99,102,241,0.1)] text-gray-500 dark:text-[#5a5d80] transition-colors cursor-pointer"
+                            >
+                                <i className="bi bi-chevron-left text-xs"></i>
+                            </button>
+                            <button
+                                onClick={() => setMiniMonth(dateHelpers.addMonths(miniMonth, 1))}
+                                className="p-1 rounded-lg hover:bg-[rgba(99,102,241,0.1)] text-gray-500 dark:text-[#5a5d80] transition-colors cursor-pointer"
+                            >
+                                <i className="bi bi-chevron-right text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Day headers */}
+                    <div className="grid grid-cols-7 text-center text-[10px] font-bold text-gray-400 dark:text-[#5a5d80] mb-1 tracking-wider">
+                        {['S','M','T','W','T','F','S'].map((d,i) => <span key={i}>{d}</span>)}
+                    </div>
+
+                    {/* Mini grid */}
+                    <div className="grid grid-cols-7 text-center gap-y-0.5 text-[12px]">
+                        {miniCalDays.map((day, idx) => {
+                            const isCurr = dateHelpers.isSameMonth(day, miniMonth);
+                            const isSelected = dateHelpers.isSameDay(day, currentDate);
+                            const isToday = dateHelpers.isToday(day);
+                            const hasExams = events.some(e => {
+                                const s = new Date(e.start);
+                                return dateHelpers.isSameDay(s, day) && getEventCategory(e) === 'exams';
+                            });
+                            return (
+                                <div key={idx} className="relative flex flex-col items-center py-0.5">
+                                    <button
+                                        onClick={() => setCurrentDate(day)}
+                                        className="h-7 w-7 mx-auto flex items-center justify-center rounded-full font-medium cursor-pointer text-[11px] transition-all duration-100"
+                                        style={{
+                                            color: !isCurr ? 'rgba(120,120,140,0.4)' : isSelected ? 'white' : isToday ? '#6366f1' : undefined,
+                                            background: isSelected ? '#6366f1' : 'transparent',
+                                            boxShadow: isSelected ? '0 0 10px rgba(99,102,241,0.5)' : isToday && !isSelected ? 'inset 0 0 0 1.5px #6366f1' : 'none',
+                                        }}
+                                    >
+                                        {day.getDate()}
+                                    </button>
+                                    {hasExams && (
+                                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                                            style={{background: isSelected ? 'white' : '#8b5cf6'}} />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Divider */}
+                <div className="mx-4 my-3 h-px bg-gradient-to-r from-transparent via-[rgba(99,102,241,0.2)] to-transparent" />
+
+                {/* My Calendars */}
+                <div className="px-3">
+                    <div
+                        onClick={() => setMyCalsExpanded(!myCalsExpanded)}
+                        className="flex items-center justify-between px-1 mb-1.5 cursor-pointer group"
+                    >
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-[#5a5d80] group-hover:text-[#6366f1] transition-colors">
+                            My Calendars
+                        </span>
+                        <i className={`bi ${myCalsExpanded ? 'bi-chevron-up' : 'bi-chevron-down'} text-gray-400 dark:text-[#5a5d80] text-xs`}></i>
+                    </div>
+                    {myCalsExpanded && (
+                        <div className="space-y-0.5">
+                            <CheckBox checked={categoryFilters.admin} color={catColors.admin.on} onChange={() => handleCategoryToggle('admin')} label={adminName || 'Super Admin'} />
+                            <CheckBox checked={categoryFilters.birthdays} color={catColors.birthdays.on} onChange={() => handleCategoryToggle('birthdays')} label="Birthdays" />
+                            <CheckBox checked={categoryFilters.tasks} color={catColors.tasks.on} onChange={() => handleCategoryToggle('tasks')} label="Tasks" />
+                        </div>
+                    )}
+                </div>
+
+                {/* Other Calendars */}
+                <div className="px-3 mt-4">
+                    <div
+                        onClick={() => setOtherCalsExpanded(!otherCalsExpanded)}
+                        className="flex items-center justify-between px-1 mb-1.5 cursor-pointer group"
+                    >
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-[#5a5d80] group-hover:text-[#6366f1] transition-colors">
+                            Other Calendars
+                        </span>
+                        <i className={`bi ${otherCalsExpanded ? 'bi-chevron-up' : 'bi-chevron-down'} text-gray-400 dark:text-[#5a5d80] text-xs`}></i>
+                    </div>
+                    {otherCalsExpanded && (
+                        <div className="space-y-0.5">
+                            <CheckBox checked={categoryFilters.holidays} color={catColors.holidays.on} onChange={() => handleCategoryToggle('holidays')} label="Holidays in India" />
+                            <CheckBox checked={categoryFilters.exams} color={catColors.exams.on} onChange={() => handleCategoryToggle('exams')} label="Exams" />
+                            {allAdmins.filter(name => name.toLowerCase() !== adminName.toLowerCase()).map(name => {
+                                const isChecked = visibleAdmins[name] !== false;
+                                return (
+                                    <CheckBox key={name} checked={isChecked} color={catColors.admin.on}
+                                        onChange={() => setVisibleAdmins(prev => ({ ...prev, [name]: !isChecked }))}
+                                        label={name} />
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Divider */}
+                <div className="mx-4 my-3 h-px bg-gradient-to-r from-transparent via-[rgba(99,102,241,0.2)] to-transparent" />
+
+                {/* Conflict Auditor */}
+                <div className="px-3">
+                    <button
+                        onClick={() => setConflictCheckOpen(!conflictCheckOpen)}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[12px] font-bold tracking-wide transition-all duration-150 cursor-pointer ${
+                            conflictCheckOpen
+                                ? 'text-red-500 dark:text-red-400'
+                                : 'text-gray-600 dark:text-[#a5a8d4]'
+                        }`}
+                        style={{
+                            background: conflictCheckOpen
+                                ? 'rgba(239,68,68,0.08)'
+                                : 'rgba(99,102,241,0.05)',
+                            border: conflictCheckOpen
+                                ? '1px solid rgba(239,68,68,0.2)'
+                                : '1px solid rgba(99,102,241,0.12)',
+                        }}
+                    >
+                        <span className="flex items-center gap-2.5">
+                            <i className="bi bi-shield-exclamation" style={{fontSize:'14px', color: globalConflicts.length > 0 ? '#ef4444' : undefined}}></i>
+                            <span>Conflict Auditor</span>
+                        </span>
+                        {globalConflicts.length > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black text-white"
+                                style={{background:'#ef4444', boxShadow:'0 0 8px rgba(239,68,68,0.5)'}}>
+                                {globalConflicts.length}
+                            </span>
+                        )}
+                    </button>
+                </div>
+            </aside>
+        );
+    }
+
+    // --- COMPONENT: MONTHVIEW ---
+    function MonthView({
+        currentDate,
+        events,
+        categoryFilters,
+        conflictsMap,
+        onCellClick,
+        onEventClick,
+        darkMode,
+        onMoreClick
+    }) {
+        const monthStart = dateHelpers.startOfMonth(currentDate);
+        const monthEnd = dateHelpers.endOfMonth(monthStart);
+        const startDate = dateHelpers.startOfWeek(monthStart);
+        const endDate = dateHelpers.endOfWeek(monthEnd);
+
+        const days = dateHelpers.eachDayOfInterval(startDate, endDate);
+
+        // Filter categories
+        const getFilteredEventsForDay = (day) => {
+            return events.filter(e => {
+                const s = new Date(e.start);
+                if (!dateHelpers.isSameDay(s, day)) return false;
+                const cat = getEventCategory(e);
+                return categoryFilters[cat];
+            }).sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+        };
+
+        const handleCellClick = (e, day) => {
+            if (e.target.closest('.event-pill') || e.target.closest('.overflow-link')) return;
+            onCellClick(day, { x: e.clientX, y: e.clientY });
+        };
+
+        const categoryColors = {
+            admin:     { bg: 'rgba(59,130,246,0.15)',  text: '#93c5fd', border: '#3b82f6' },
+            exams:     { bg: 'rgba(99,102,241,0.15)',  text: '#a5b4fc', border: '#6366f1' },
+            tasks:     { bg: 'rgba(245,158,11,0.15)',  text: '#fcd34d', border: '#f59e0b' },
+            holidays:  { bg: 'rgba(16,185,129,0.15)',  text: '#6ee7b7', border: '#10b981' },
+            birthdays: { bg: 'rgba(236,72,153,0.15)',  text: '#f9a8d4', border: '#ec4899' },
+        };
+        const lightCategoryColors = {
+            admin:     { bg: '#EEF2FF', text: '#4338CA', border: '#818cf8' },
+            exams:     { bg: '#EDE9FE', text: '#6D28D9', border: '#7c3aed' },
+            tasks:     { bg: '#FFFBEB', text: '#92400E', border: '#d97706' },
+            holidays:  { bg: '#D1FAE5', text: '#065F46', border: '#059669' },
+            birthdays: { bg: '#FCE7F3', text: '#9D174D', border: '#db2777' },
+        };
+
+        return (
+            <div className="flex-1 flex flex-col h-full select-none" style={{background: darkMode ? '#0a0a0f' : '#f8f9fa'}}>
+                {/* Headers row */}
+                <div className="grid grid-cols-7 flex-shrink-0" style={{borderBottom: darkMode ? '1px solid rgba(99,102,241,0.12)' : '1px solid #e5e7eb'}}>
+                    {weekdayNamesShort.map((day, idx) => (
+                        <div key={idx} className="text-center py-3 text-[11px] font-bold uppercase tracking-widest"
+                            style={{color: darkMode ? '#5a5d80' : '#9ca3af'}}>
+                            {day}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Month Days Grid */}
+                <div
+                    className="grid grid-cols-7 flex-grow"
+                    style={{
+                        gridTemplateRows: `repeat(${Math.ceil(days.length / 7)}, minmax(0, 1fr))`,
+                        borderBottom: darkMode ? '1px solid rgba(99,102,241,0.1)' : '1px solid #e5e7eb',
+                        borderRight:  darkMode ? '1px solid rgba(99,102,241,0.1)' : '1px solid #e5e7eb',
+                    }}
+                >
+                    {days.map((day, idx) => {
+                        const dayEvents = getFilteredEventsForDay(day);
+                        const isCurrMonth = dateHelpers.isSameMonth(day, currentDate);
+                        const isToday = dateHelpers.isToday(day);
+                        const dayConflicts = dayEvents.filter(e => conflictsMap[e.id]?.length > 0);
+                        const hasConflict = dayConflicts.length > 0;
+                        const examCount = dayEvents.filter(e => getEventCategory(e) === 'exams').length;
+
+                        let dayDisplayStr = `${day.getDate()}`;
+                        if (day.getDate() === 1) {
+                            dayDisplayStr = `${day.getDate()} ${dateHelpers.format(day, 'MMM')}`;
+                        }
+
+                        const displayEvents = dayEvents.slice(0, 3);
+                        const overflowCount = dayEvents.length - 3;
+
+                        return (
+                            <div
+                                key={idx}
+                                onClick={(e) => handleCellClick(e, day)}
+                                className="day-cell p-1.5 flex flex-col min-h-0 relative cursor-pointer transition-colors duration-75"
+                                style={{
+                                    borderLeft:  darkMode ? '1px solid rgba(99,102,241,0.1)' : '1px solid #e5e7eb',
+                                    borderTop:   darkMode ? '1px solid rgba(99,102,241,0.1)' : '1px solid #e5e7eb',
+                                    background:  !isCurrMonth
+                                        ? (darkMode ? 'rgba(10,10,16,0.6)' : 'rgba(248,249,250,0.6)')
+                                        : (darkMode ? '#0f0f1a' : '#ffffff'),
+                                }}
+                            >
+                                {/* Date number header */}
+                                <div className="flex items-center justify-between mb-1.5 pr-1">
+                                    <div className="flex items-center gap-1.5">
+                                        <span
+                                            className="text-[12px] font-bold h-[26px] min-w-[26px] px-1 flex items-center justify-center rounded-full mt-0.5 ml-0.5"
+                                            style={{
+                                                color: isToday ? 'white'
+                                                    : !isCurrMonth ? (darkMode ? '#3a3d5c' : '#cbd5e1')
+                                                    : (darkMode ? '#a5a8d4' : '#374151'),
+                                                background: isToday ? '#6366f1' : 'transparent',
+                                                boxShadow: isToday ? '0 0 12px rgba(99,102,241,0.5)' : 'none',
+                                                fontWeight: isToday ? '800' : '600',
+                                            }}
+                                        >
+                                            {dayDisplayStr}
+                                        </span>
+                                        {examCount > 0 && (
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                                                style={{
+                                                    background: darkMode ? 'rgba(99,102,241,0.15)' : '#EDE9FE',
+                                                    color: darkMode ? '#a5b4fc' : '#6D28D9',
+                                                    border: darkMode ? '1px solid rgba(99,102,241,0.25)' : '1px solid #c4b5fd',
+                                                }}>
+                                                {examCount} {examCount === 1 ? 'Exam' : 'Exams'}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {hasConflict && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 block animate-pulse flex-shrink-0" title="Schedule Warning"
+                                            style={{boxShadow:'0 0 6px rgba(239,68,68,0.6)'}} />
+                                    )}
+                                </div>
+
+                                {/* Event Pills */}
+                                <div className="flex-1 overflow-y-hidden space-y-0.5 px-0.5">
+                                    {displayEvents.map(event => {
+                                        const conflicts = conflictsMap[event.id] || [];
+                                        const isConflicting = conflicts.length > 0;
+                                        const cat = getEventCategory(event);
+                                        const colors = darkMode ? categoryColors[cat] : lightCategoryColors[cat];
+
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onEventClick(event, { x: e.clientX, y: e.clientY });
+                                                }}
+                                                className="event-pill h-[18px] px-1.5 rounded-[5px] text-[11px] font-semibold flex items-center gap-1 select-none truncate cursor-pointer"
+                                                style={{
+                                                    background: colors?.bg || 'rgba(99,102,241,0.15)',
+                                                    color: colors?.text || '#a5b4fc',
+                                                    borderLeft: `2.5px solid ${colors?.border || '#6366f1'}`,
+                                                }}
+                                                title={event.title}
+                                            >
+                                                {isConflicting && (
+                                                    <span className="w-1 h-1 rounded-full bg-red-400 flex-shrink-0" />
+                                                )}
+                                                <span className="truncate">{event.title}</span>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {/* Overflow Link */}
+                                    {overflowCount > 0 && (
+                                        <div
+                                            className="overflow-link text-[10px] font-bold px-1 py-0.5 cursor-pointer transition-colors rounded"
+                                            style={{color: darkMode ? '#6366f1' : '#4f46e5'}}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (onMoreClick) {
+                                                    onMoreClick(day, { x: e.clientX, y: e.clientY });
+                                                } else {
+                                                    onCellClick(day, { x: e.clientX, y: e.clientY });
+                                                }
+                                            }}
+                                        >
+                                            +{overflowCount} more
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
+    // --- COMPONENT: WEEKVIEW ---
+    function WeekView({
+        currentDate,
+        events,
+        categoryFilters,
+        conflictsMap,
+        onCellClick,
+        onEventClick
+    }) {
+        const startOfCurrWeek = dateHelpers.startOfWeek(currentDate);
+        const weekDays = dateHelpers.eachDayOfInterval(startOfCurrWeek, dateHelpers.addDays(startOfCurrWeek, 6));
+
+        const hours = Array.from({ length: 24 }, (_, i) => i);
+        const rowHeight = 60; // 60px per hour
+
+        // Time indicator details
+        const [currentTime, setCurrentTime] = useState(new Date());
+        useEffect(() => {
+            const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+            return () => clearInterval(timer);
+        }, []);
+
+        const getFilteredEventsForDay = (day) => {
+            return events.filter(e => {
+                const s = new Date(e.start);
+                if (!dateHelpers.isSameDay(s, day)) return false;
+                const cat = getEventCategory(e);
+                return categoryFilters[cat];
+            });
+        };
+
+        const computeEventPositions = (dayEvents) => {
+            const sorted = [...dayEvents].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+            const columns = [];
+            const positions = {};
+
+            sorted.forEach(event => {
+                const start = new Date(event.start);
+                const end = new Date(event.end);
+                
+                let colIndex = 0;
+                while (true) {
+                    if (!columns[colIndex]) {
+                        columns[colIndex] = [event];
+                        break;
+                    }
+                    
+                    const hasOverlap = columns[colIndex].some(other => {
+                        const otherStart = new Date(other.start);
+                        const otherEnd = new Date(other.end);
+                        return start < otherEnd && otherStart < end;
+                    });
+
+                    if (!hasOverlap) {
+                        columns[colIndex].push(event);
+                        break;
+                    }
+                    colIndex++;
+                }
+                positions[event.id] = { colIndex };
+            });
+
+            sorted.forEach(event => {
+                const start = new Date(event.start);
+                const end = new Date(event.end);
+
+                const overlapping = sorted.filter(other => {
+                    const otherStart = new Date(other.start);
+                    const otherEnd = new Date(other.end);
+                    return start < otherEnd && otherStart < end;
+                });
+
+                let maxColIndex = 0;
+                overlapping.forEach(other => {
+                    const pos = positions[other.id];
+                    if (pos.colIndex > maxColIndex) {
+                        maxColIndex = pos.colIndex;
+                    }
+                });
+
+                positions[event.id].totalCols = maxColIndex + 1;
+            });
+
+            return positions;
+        };
+
+        const handleCellClick = (e, day, hour) => {
+            if (e.target.closest('.event-block')) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickY = e.clientY - rect.top;
+            const clickMinute = Math.floor((clickY / rowHeight) * 60);
+
+            const selectedDate = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, clickMinute);
+            onCellClick(selectedDate, { x: e.clientX, y: e.clientY });
+        };
+
+        const categoryColors = {
+            admin: 'bg-[#1a73e8] border-l-4 border-blue-800 text-white',
+            exams: 'bg-[#7986cb] border-l-4 border-indigo-900 text-white',
+            tasks: 'bg-[#0b8043] dark:bg-[#0f9d58] border-l-4 border-green-800 text-white',
+            holidays: 'bg-[#0f9d58] dark:bg-[#0d652d] border-l-4 border-green-900 text-white'
+        };
+
+        return (
+            <div className="flex-1 flex flex-col h-full bg-white dark:bg-[#1a1a1a] overflow-hidden select-none text-gray-800 dark:text-[#e8eaed]">
+                {/* Header Row */}
+                <div className="flex border-b border-[#dadce0] dark:border-[#3c3c3c] flex-shrink-0">
+                    <div className="w-16 flex-shrink-0 border-r border-[#dadce0] dark:border-[#3c3c3c]" />
+                    <div className="flex-1 grid grid-cols-7">
+                        {weekDays.map((day, idx) => {
+                            const isToday = dateHelpers.isToday(day);
+                            const dayEvents = getFilteredEventsForDay(day);
+                            const examCount = dayEvents.filter(e => getEventCategory(e) === 'exams').length;
+                            return (
+                                <div key={idx} className="text-center py-2 border-r border-[#dadce0] dark:border-[#3c3c3c] flex flex-col items-center justify-center min-h-[64px]">
+                                    <span className="text-[11px] font-semibold text-gray-500 dark:text-[#9aa0a6] uppercase tracking-[0.8px]">
+                                        {dateHelpers.format(day, 'EEE')}
+                                    </span>
+                                    <span 
+                                        className={`
+                                            text-base font-semibold h-8 w-8 flex items-center justify-center rounded-full mt-0.5
+                                            ${isToday ? 'bg-[#1a73e8] text-white font-bold' : 'text-gray-700 dark:text-[#e8eaed]'}
+                                        `}
+                                    >
+                                        {day.getDate()}
+                                    </span>
+                                    {examCount > 0 && (
+                                        <span className="text-[9px] font-semibold mt-1 px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 border border-indigo-150 dark:border-indigo-900/30">
+                                            {examCount} {examCount === 1 ? 'Exam' : 'Exams'}
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Hourly scroll panel */}
+                <div className="flex-grow overflow-y-auto flex relative">
+                    {/* Time Label Column */}
+                    <div className="w-16 flex-shrink-0 border-r border-[#dadce0] dark:border-[#3c3c3c] bg-gray-50/20 dark:bg-transparent">
+                        {hours.map(hour => (
+                            <div key={hour} className="relative text-right pr-2 text-[10px] font-medium text-gray-500 dark:text-gray-400" style={{ height: `${rowHeight}px` }}>
+                                {hour > 0 && (
+                                    <span className="absolute -top-2 right-2">
+                                        {hour > 12 ? `${hour - 12} PM` : hour === 12 ? '12 PM' : `${hour} AM`}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Columns grid */}
+                    <div className="flex-1 grid grid-cols-7 relative h-fit">
+                        {weekDays.map((day, dayIdx) => {
+                            const dayEvents = getFilteredEventsForDay(day);
+                            const positions = computeEventPositions(dayEvents);
+                            const isTodayColumn = dateHelpers.isToday(day);
+
+                            // Calculate Red Time Marker Position
+                            const currentHour = currentTime.getHours();
+                            const currentMin = currentTime.getMinutes();
+                            const timeIndicatorTop = (currentHour * rowHeight) + ((currentMin / 60) * rowHeight);
+
+                            return (
+                                <div key={dayIdx} className="relative border-r border-[#dadce0] dark:border-[#3c3c3c]" style={{ height: `${rowHeight * 24}px` }}>
+                                    {hours.map(hour => (
+                                        <div
+                                            key={hour}
+                                            onClick={(e) => handleCellClick(e, day, hour)}
+                                            className="border-b border-gray-100 dark:border-[#3c3c3c]/50 w-full hover:bg-gray-50/40 dark:hover:bg-[#2a2a2a]/20 cursor-pointer"
+                                            style={{ height: `${rowHeight}px` }}
+                                        />
+                                    ))}
+
+                                    {/* Red current time indicator line */}
+                                    {isTodayColumn && (
+                                        <div 
+                                            className="absolute left-0 right-0 border-t-2 border-red-500 z-10 pointer-events-none"
+                                            style={{ top: `${timeIndicatorTop}px` }}
+                                        >
+                                            <div className="w-2.5 h-2.5 rounded-full bg-red-500 absolute -left-1.5 -top-1" />
+                                        </div>
+                                    )}
+
+                                    {/* Absolutely Positioned Event Blocks */}
+                                    {dayEvents.map(event => {
+                                        const start = new Date(event.start);
+                                        const end = new Date(event.end);
+                                        
+                                        const startHour = start.getHours();
+                                        const startMin = start.getMinutes();
+                                        const durationMins = dateHelpers.differenceInMinutes(end, start);
+                                        
+                                        const top = (startHour * rowHeight) + ((startMin / 60) * rowHeight);
+                                        const height = Math.max((durationMins / 60) * rowHeight, 20);
+
+                                        const cat = getEventCategory(event);
+                                        const colorStyle = categoryColors[cat] || 'bg-gray-500 border-l-4 border-gray-800 text-white';
+
+                                        const pos = positions[event.id] || { colIndex: 0, totalCols: 1 };
+                                        const width = 100 / pos.totalCols;
+                                        const left = pos.colIndex * width;
+
+                                        const conflicts = conflictsMap[event.id] || [];
+                                        const hasConflict = conflicts.length > 0;
+
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onEventClick(event, { x: e.clientX, y: e.clientY });
+                                                }}
+                                                className={`
+                                                    event-block absolute p-1.5 rounded-[4px] text-[11px] font-medium leading-tight flex flex-col justify-between overflow-hidden cursor-pointer select-none transition-all duration-100 hover:scale-[1.01] hover:z-20
+                                                    ${colorStyle}
+                                                `}
+                                                style={{
+                                                    top: `${top}px`,
+                                                    height: `${height}px`,
+                                                    left: `${left}%`,
+                                                    width: `${width - 0.5}%`,
+                                                }}
+                                            >
+                                                <div className="truncate">
+                                                    <div className="flex items-center gap-1 select-none">
+                                                        <span className="opacity-80 text-[10px]">
+                                                            {dateHelpers.format(start, 'HH:mm')}
+                                                        </span>
+                                                        {hasConflict && (
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-red-600 inline-block" />
+                                                        )}
+                                                    </div>
+                                                    <div className="truncate font-sans font-semibold mt-0.5">{event.title}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- COMPONENT: DAYVIEW ---
+    function DayView({
+        currentDate,
+        events,
+        categoryFilters,
+        conflictsMap,
+        onCellClick,
+        onEventClick
+    }) {
+        const hours = Array.from({ length: 24 }, (_, i) => i);
+        const rowHeight = 60; // 60px per hour
+
+        const [currentTime, setCurrentTime] = useState(new Date());
+        useEffect(() => {
+            const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+            return () => clearInterval(timer);
+        }, []);
+
+        const getFilteredEventsForDay = () => {
+            return events.filter(e => {
+                const s = new Date(e.start);
+                if (!dateHelpers.isSameDay(s, currentDate)) return false;
+                const cat = getEventCategory(e);
+                return categoryFilters[cat];
+            });
+        };
+
+        const computeEventPositions = (dayEvents) => {
+            const sorted = [...dayEvents].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+            const columns = [];
+            const positions = {};
+
+            sorted.forEach(event => {
+                const start = new Date(event.start);
+                const end = new Date(event.end);
+                
+                let colIndex = 0;
+                while (true) {
+                    if (!columns[colIndex]) {
+                        columns[colIndex] = [event];
+                        break;
+                    }
+                    
+                    const hasOverlap = columns[colIndex].some(other => {
+                        const otherStart = new Date(other.start);
+                        const otherEnd = new Date(other.end);
+                        return start < otherEnd && otherStart < end;
+                    });
+
+                    if (!hasOverlap) {
+                        columns[colIndex].push(event);
+                        break;
+                    }
+                    colIndex++;
+                }
+                positions[event.id] = { colIndex };
+            });
+
+            sorted.forEach(event => {
+                const start = new Date(event.start);
+                const end = new Date(event.end);
+
+                const overlapping = sorted.filter(other => {
+                    const otherStart = new Date(other.start);
+                    const otherEnd = new Date(other.end);
+                    return start < otherEnd && otherStart < end;
+                });
+
+                let maxColIndex = 0;
+                overlapping.forEach(other => {
+                    const pos = positions[other.id];
+                    if (pos.colIndex > maxColIndex) {
+                        maxColIndex = pos.colIndex;
+                    }
+                });
+
+                positions[event.id].totalCols = maxColIndex + 1;
+            });
+
+            return positions;
+        };
+
+        const handleCellClick = (e, hour) => {
+            if (e.target.closest('.event-block')) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickY = e.clientY - rect.top;
+            const clickMinute = Math.floor((clickY / rowHeight) * 60);
+
+            const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hour, clickMinute);
+            onCellClick(selectedDate, { x: e.clientX, y: e.clientY });
+        };
+
+        const categoryColors = {
+            admin: 'bg-[#1a73e8] border-l-4 border-blue-800 text-white',
+            exams: 'bg-[#7986cb] border-l-4 border-indigo-900 text-white',
+            tasks: 'bg-[#0b8043] dark:bg-[#0f9d58] border-l-4 border-green-800 text-white',
+            holidays: 'bg-[#0f9d58] dark:bg-[#0d652d] border-l-4 border-green-900 text-white'
+        };
+
+        const dayEvents = getFilteredEventsForDay();
+        const positions = computeEventPositions(dayEvents);
+        const isToday = dateHelpers.isToday(currentDate);
+
+        // Time Indicator Top position
+        const currentHour = currentTime.getHours();
+        const currentMin = currentTime.getMinutes();
+        const timeIndicatorTop = (currentHour * rowHeight) + ((currentMin / 60) * rowHeight);
+
+        return (
+            <div className="flex-1 flex flex-col h-full bg-white dark:bg-[#1a1a1a] overflow-hidden select-none text-gray-800 dark:text-[#e8eaed]">
+                {/* Header Row */}
+                <div className="flex border-b border-[#dadce0] dark:border-[#3c3c3c] flex-shrink-0">
+                    <div className="w-16 flex-shrink-0 border-r border-[#dadce0] dark:border-[#3c3c3c]" />
+                    <div className="flex-1 py-3 px-6 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="flex flex-col items-center">
+                                <span className="text-[11px] font-semibold text-gray-500 dark:text-[#9aa0a6] uppercase tracking-[0.8px]">
+                                    {dateHelpers.format(currentDate, 'EEEE')}
+                                </span>
+                                <span 
+                                    className={`
+                                        text-2xl font-bold h-12 w-12 flex items-center justify-center rounded-full mt-1
+                                        ${isToday ? 'bg-[#1a73e8] text-white' : 'text-gray-800 dark:text-[#e8eaed]'}
+                                    `}
+                                >
+                                    {currentDate.getDate()}
+                                </span>
+                            </div>
+                            {dayEvents.filter(e => getEventCategory(e) === 'exams').length > 0 && (
+                                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 border border-indigo-150 dark:border-indigo-900/30">
+                                    {dayEvents.filter(e => getEventCategory(e) === 'exams').length} {dayEvents.filter(e => getEventCategory(e) === 'exams').length === 1 ? 'Exam' : 'Exams'} Scheduled
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Hourly content panel */}
+                <div className="flex-grow overflow-y-auto flex relative">
+                    {/* Time labels column */}
+                    <div className="w-16 flex-shrink-0 border-r border-[#dadce0] dark:border-[#3c3c3c] bg-gray-50/20 dark:bg-transparent">
+                        {hours.map(hour => (
+                            <div key={hour} className="relative text-right pr-2 text-[10px] font-medium text-gray-500 dark:text-gray-400" style={{ height: `${rowHeight}px` }}>
+                                {hour > 0 && (
+                                    <span className="absolute -top-2 right-2">
+                                        {hour > 12 ? `${hour - 12} PM` : hour === 12 ? '12 PM' : `${hour} AM`}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Single Day grid area */}
+                    <div className="flex-1 relative h-fit">
+                        {hours.map(hour => (
+                            <div
+                                key={hour}
+                                onClick={(e) => handleCellClick(e, hour)}
+                                className="border-b border-gray-100 dark:border-[#3c3c3c]/50 w-full hover:bg-gray-50/40 dark:hover:bg-[#2a2a2a]/20 cursor-pointer"
+                                style={{ height: `${rowHeight}px` }}
+                            />
+                        ))}
+
+                        {/* Red Current Time Line Indicator */}
+                        {isToday && (
+                            <div 
+                                className="absolute left-0 right-0 border-t-2 border-red-500 z-10 pointer-events-none"
+                                style={{ top: `${timeIndicatorTop}px` }}
+                            >
+                                <div className="w-2.5 h-2.5 rounded-full bg-red-500 absolute -left-1.5 -top-1" />
+                            </div>
+                        )}
+
+                        {/* Events Blocks */}
+                        {dayEvents.map(event => {
+                            const start = new Date(event.start);
+                            const end = new Date(event.end);
+                            
+                            const startHour = start.getHours();
+                            const startMin = start.getMinutes();
+                            const durationMins = dateHelpers.differenceInMinutes(end, start);
+                            
+                            const top = (startHour * rowHeight) + ((startMin / 60) * rowHeight);
+                            const height = Math.max((durationMins / 60) * rowHeight, 20);
+
+                            const cat = event.category?.toLowerCase() || (event.eventType?.toLowerCase() === 'holiday' ? 'holidays' : (event.eventType?.toLowerCase() === 'exam' ? 'exams' : 'admin'));
+                            const colorStyle = categoryColors[cat] || 'bg-gray-500 border-l-4 border-gray-800 text-white';
+
+                            const pos = positions[event.id] || { colIndex: 0, totalCols: 1 };
+                            const width = 100 / pos.totalCols;
+                            const left = pos.colIndex * width;
+
+                            const conflicts = conflictsMap[event.id] || [];
+                            const hasConflict = conflicts.length > 0;
+
+                            return (
+                                <div
+                                    key={event.id}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onEventClick(event, { x: e.clientX, y: e.clientY });
+                                    }}
+                                    className={`
+                                        event-block absolute p-2 rounded-[4px] text-xs font-semibold leading-tight flex flex-col justify-between overflow-hidden cursor-pointer select-none transition-all duration-100 hover:scale-[1.01] hover:z-20
+                                        ${colorStyle}
+                                    `}
+                                    style={{
+                                        top: `${top}px`,
+                                        height: `${height}px`,
+                                        left: `${left}%`,
+                                        width: `${width - 0.5}%`,
+                                    }}
+                                >
+                                    <div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="opacity-80 text-[10px]">
+                                                {dateHelpers.format(start, 'hh:mm a')} - {dateHelpers.format(end, 'hh:mm a')}
+                                            </span>
+                                            {hasConflict && (
+                                                <i className="bi bi-exclamation-triangle-fill text-red-400 text-xs"></i>
+                                            )}
+                                        </div>
+                                        <div className="truncate font-semibold text-sm mt-0.5">{event.title}</div>
+                                    </div>
+                                    
+                                    {height > 60 && (
+                                        <div className="mt-1 space-y-0.5 text-[10px] font-normal opacity-85">
+                                            {event.room && <div>Room: {event.room}</div>}
+                                            {event.description && <div className="truncate italic">"{event.description}"</div>}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- COMPONENT: CREATEEVENTMODAL ---
+    function CreateEventModal({
+        isOpen,
+        onClose,
+        onSave,
+        selectedDate,
+        editEvent,
+        popoverCoords,
+        mode,
+        setMode,
+        allAdmins,
+        adminName,
+        usersList = []
+    }) {
+        const [title, setTitle] = useState('');
+        const [category, setCategory] = useState('admin');
+        const [dateStr, setDateStr] = useState('');
+        const [startTime, setStartTime] = useState('09:00');
+        const [endTime, setEndTime] = useState('10:00');
+        const [room, setRoom] = useState('');
+        const [description, setDescription] = useState('');
+        const [priority, setPriority] = useState('LOW');
+        const [visibility, setVisibility] = useState('PRIVATE');
+        const [assignedTo, setAssignedTo] = useState('');
+        const [eventType, setEventType] = useState('TASK');
+
+        const [selectedUserIds, setSelectedUserIds] = useState([]);
+        const [userSearch, setUserSearch] = useState('');
+        const [dropdownOpen, setDropdownOpen] = useState(false);
+        const searchContainerRef = useRef(null);
+
+        useEffect(() => {
+            const handleClickOutside = (e) => {
+                if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+                    setDropdownOpen(false);
+                }
+            };
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, []);
+
+        useEffect(() => {
+            if (editEvent) {
+                setTitle(editEvent.title || '');
+                setCategory(editEvent.category || 'admin');
+                const start = new Date(editEvent.start);
+                const end = new Date(editEvent.end);
+                setDateStr(start.toISOString().split('T')[0]);
+                setStartTime(dateHelpers.format(start, 'HH:mm'));
+                setEndTime(dateHelpers.format(end, 'HH:mm'));
+                setRoom(editEvent.room || '');
+                setDescription(cleanDescription(editEvent.description) || '');
+                setPriority(editEvent.priority || 'LOW');
+                setVisibility(editEvent.visibility || 'PRIVATE');
+                setAssignedTo(editEvent.assignedTo || '');
+                setEventType(editEvent.eventType || 'TASK');
+
+                const ids = (editEvent.sharedWith || '').split(',').filter(Boolean).map(Number);
+                setSelectedUserIds(ids);
+                setUserSearch('');
+                setDropdownOpen(false);
+            } else if (selectedDate) {
+                setTitle('');
+                setCategory('admin');
+                setDateStr(selectedDate.toISOString().split('T')[0]);
+                setStartTime(dateHelpers.format(selectedDate, 'HH:mm'));
+                const end = new Date(selectedDate.getTime() + 60 * 60 * 1000);
+                setEndTime(dateHelpers.format(end, 'HH:mm'));
+                setRoom('');
+                setDescription('');
+                setPriority('LOW');
+                setVisibility('PRIVATE');
+                setAssignedTo('');
+                setEventType('TASK');
+
+                setSelectedUserIds([]);
+                setUserSearch('');
+                setDropdownOpen(false);
+            }
+        }, [editEvent, selectedDate, isOpen]);
+
+        if (!isOpen) return null;
+
+        const handleSubmit = (e) => {
+            if (e) e.preventDefault();
+            if (!title.trim()) return;
+
+            let finalSharedWith = '';
+            if (visibility === 'SHARED' && selectedUserIds.length > 0) {
+                finalSharedWith = ',' + selectedUserIds.join(',') + ',';
+            }
+
+            onSave({
+                id: editEvent ? editEvent.id : null,
+                title,
+                description,
+                category,
+                eventType,
+                priority,
+                visibility,
+                assignedTo,
+                dateStr,
+                startTime,
+                endTime,
+                room,
+                sharedWith: finalSharedWith
+            });
+            onClose();
+        };
+
+        const getPopoverStyle = () => {
+            if (!popoverCoords) return {};
+            const width = 360;
+            const height = 240;
+            const padding = 20;
+
+            let left = popoverCoords.x + 10;
+            let top = popoverCoords.y - 80;
+
+            if (typeof window !== 'undefined') {
+                if (left + width > window.innerWidth) {
+                    left = popoverCoords.x - width - 10;
+                }
+                if (top + height > window.innerHeight) {
+                    top = window.innerHeight - height - padding;
+                }
+                if (top < padding) {
+                    top = padding;
+                }
+            }
+
+            return {
+                position: 'absolute',
+                left: `${left}px`,
+                top: `${top}px`,
+                zIndex: 50
+            };
+        };
+
+        if (mode === 'quick') {
+            return (
+                <div
+                    style={{
+                        ...getPopoverStyle(),
+                        background: 'linear-gradient(135deg, #0f0f1a 0%, #141428 100%)',
+                        border: '1px solid rgba(99,102,241,0.3)',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(99,102,241,0.15)',
+                        borderRadius: '16px',
+                        padding: '18px',
+                        width: '320px',
+                        zIndex: 50,
+                    }}
+                    className="animate-modal"
+                >
+                    <div className="flex justify-between items-center mb-3">
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest" style={{color:'#5a5d80'}}>Quick Add Event</span>
+                        <button onClick={onClose} className="cursor-pointer transition-colors" style={{color:'#5a5d80'}} onMouseEnter={e=>e.currentTarget.style.color='#f0f0ff'} onMouseLeave={e=>e.currentTarget.style.color='#5a5d80'}>
+                            <i className="bi bi-x-lg text-sm"></i>
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-3">
+                        <input
+                            type="text"
+                            placeholder="Event title..."
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="w-full text-[14px] font-semibold outline-none bg-transparent pb-2"
+                            style={{borderBottom:'1px solid rgba(99,102,241,0.3)', color:'#f0f0ff'}}
+                            autoFocus
+                            required
+                        />
+
+                        <div className="flex items-center gap-2 text-[11px]" style={{color:'#5a5d80'}}>
+                            <i className="bi bi-clock"></i>
+                            <span>{dateStr} • {startTime} – {endTime}</span>
+                        </div>
+
+                        {/* Category quick pills */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            {['admin', 'exams', 'tasks', 'holidays'].map(cat => {
+                                const catBg = {admin:'#3b82f6',exams:'#6366f1',tasks:'#f59e0b',holidays:'#10b981'};
+                                const isActive = category === cat;
+                                return (
+                                    <button
+                                        key={cat}
+                                        type="button"
+                                        onClick={() => {
+                                            setCategory(cat);
+                                            if (cat === 'holidays') setEventType('HOLIDAY');
+                                            else if (cat === 'exams') setEventType('EXAM');
+                                            else setEventType('TASK');
+                                        }}
+                                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer"
+                                        style={{
+                                            background: isActive ? catBg[cat] : 'rgba(255,255,255,0.05)',
+                                            color: isActive ? 'white' : '#5a5d80',
+                                            border: isActive ? `1px solid ${catBg[cat]}` : '1px solid rgba(255,255,255,0.08)',
+                                            boxShadow: isActive ? `0 0 10px ${catBg[cat]}60` : 'none',
+                                        }}
+                                    >
+                                        {cat}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2" style={{borderTop:'1px solid rgba(99,102,241,0.12)'}}>
+                            <button
+                                type="button"
+                                onClick={() => setMode('full')}
+                                className="text-[11px] font-semibold cursor-pointer transition-colors"
+                                style={{color:'#6366f1'}}
+                            >
+                                More options
+                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-3 py-1 text-[11px] font-semibold rounded-lg cursor-pointer transition-all"
+                                    style={{color:'#5a5d80', background:'rgba(255,255,255,0.05)'}}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-1 text-[11px] font-bold rounded-lg cursor-pointer"
+                                    style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)', color:'white', boxShadow:'0 0 12px rgba(99,102,241,0.5)'}}
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            );
+        }
+
+        // Full modal centered overlay mode
+        return (
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4 font-sans select-text modal-backdrop-premium animate-modal">
+                <div className="w-full max-w-md rounded-2xl overflow-hidden"
+                    style={{
+                        background:'linear-gradient(135deg,#0f0f1a 0%,#141428 100%)',
+                        border:'1px solid rgba(99,102,241,0.3)',
+                        boxShadow:'0 30px 80px rgba(0,0,0,0.7), 0 0 40px rgba(99,102,241,0.15)',
+                        color:'#f0f0ff',
+                    }}
+                >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-5 py-4" style={{borderBottom:'1px solid rgba(99,102,241,0.15)'}}>
+                        <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)'}}>
+                                <i className="bi bi-calendar-plus text-white" style={{fontSize:'10px'}}></i>
+                            </div>
+                            <h2 className="text-[13px] font-bold" style={{color:'#f0f0ff'}}>{editEvent ? 'Edit Event' : 'New Event'}</h2>
+                        </div>
+                        <button onClick={onClose} className="cursor-pointer transition-colors rounded-lg p-1" style={{color:'#5a5d80'}} onMouseEnter={e=>e.currentTarget.style.color='#f0f0ff'} onMouseLeave={e=>e.currentTarget.style.color='#5a5d80'}>
+                            <i className="bi bi-x-lg text-sm"></i>
+                        </button>
+                    </div>
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
+                        {/* Title */}
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Add title"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                className="w-full text-base font-semibold border-b border-gray-300 dark:border-[#3c3c3c] focus:border-[#1a73e8] outline-none pb-1.5 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                                required
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Date & Time fields */}
+                        <div className="grid grid-cols-3 gap-2 items-center">
+                            <div className="col-span-1">
+                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Date</label>
+                                <input
+                                    type="date"
+                                    value={dateStr}
+                                    onChange={(e) => setDateStr(e.target.value)}
+                                    className="bg-transparent border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs w-full text-gray-800 dark:text-white outline-none"
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Start Time</label>
+                                <input
+                                    type="time"
+                                    value={startTime}
+                                    onChange={(e) => setStartTime(e.target.value)}
+                                    className="bg-transparent border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs w-full text-gray-800 dark:text-white outline-none"
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">End Time</label>
+                                <input
+                                    type="time"
+                                    value={endTime}
+                                    onChange={(e) => setEndTime(e.target.value)}
+                                    className="bg-transparent border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs w-full text-gray-800 dark:text-white outline-none"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {/* Event Category & Type selection */}
+                        <div className="flex gap-2 items-center">
+                            <span className="text-xs text-gray-400 w-20">Category:</span>
+                            <select
+                                value={category}
+                                onChange={(e) => {
+                                    setCategory(e.target.value);
+                                    if (e.target.value === 'holidays') setEventType('HOLIDAY');
+                                    else if (e.target.value === 'exams') setEventType('EXAM');
+                                    else setEventType('TASK');
+                                }}
+                                className="flex-1 bg-white dark:bg-[#1e1e1e] border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs text-gray-800 dark:text-white outline-none"
+                            >
+                                <option value="admin">Admin (Blue)</option>
+                                <option value="exams">Exams (Purple)</option>
+                                <option value="tasks">Tasks (Red)</option>
+                                <option value="holidays">Holidays (Green)</option>
+                                <option value="birthdays">Birthdays (Light Green)</option>
+                            </select>
+                        </div>
+
+                        {/* Priority Selector */}
+                        <div className="flex gap-2 items-center">
+                            <span className="text-xs text-gray-400 w-20">Priority:</span>
+                            <select
+                                value={priority}
+                                onChange={(e) => setPriority(e.target.value)}
+                                className="flex-1 bg-white dark:bg-[#1e1e1e] border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs text-gray-800 dark:text-white outline-none"
+                            >
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                            </select>
+                        </div>
+
+                        {/* Assigned To selector */}
+                        <div className="flex gap-2 items-center">
+                            <span className="text-xs text-gray-400 w-20">Assignee:</span>
+                            <select
+                                value={assignedTo}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setAssignedTo(val);
+                                    if (val === '') {
+                                        setVisibility('PRIVATE');
+                                    } else if (val === 'Everyone') {
+                                        setVisibility('PUBLIC');
+                                    } else {
+                                        setVisibility('SHARED');
+                                    }
+                                }}
+                                className="flex-1 bg-white dark:bg-[#1e1e1e] border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs text-gray-800 dark:text-white outline-none"
+                            >
+                                <option value="">Assign to Me</option>
+                                <option value="Everyone">Everyone (Visible to all)</option>
+                                {allAdmins.map(admin => (
+                                    <option key={admin} value={admin}>{admin}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Visibility Selector */}
+                        <div className="flex gap-2 items-center">
+                            <span className="text-xs text-gray-400 w-20">Visibility:</span>
+                            <select
+                                value={visibility}
+                                onChange={(e) => setVisibility(e.target.value)}
+                                className="flex-1 bg-white dark:bg-[#1e1e1e] border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs text-gray-800 dark:text-white outline-none"
+                            >
+                                <option value="PRIVATE">🔒 Private</option>
+                                <option value="SHARED">👥 Shared</option>
+                                <option value="PUBLIC">🌍 Public</option>
+                            </select>
+                        </div>
+                        {/* Visibility Explanation */}
+                        <div className="text-[10px] text-gray-400 -mt-2 space-y-0.5" style={{ paddingLeft: '88px' }}>
+                            {visibility === 'PRIVATE' && <div>Private: Only you can view.</div>}
+                            {visibility === 'SHARED' && <div>Shared: Only creator and assigned user can view.</div>}
+                            {visibility === 'PUBLIC' && <div>Public: Visible to all admins.</div>}
+                        </div>
+
+                        {/* Dynamic User Selection for Shared Tasks */}
+                        <div 
+                            ref={searchContainerRef}
+                            className={`transition-all duration-300 ${visibility === 'SHARED' ? 'max-h-[500px] opacity-100 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden pointer-events-none'}`}
+                        >
+                            <div className="flex flex-col gap-2 p-2.5 rounded bg-gray-50 dark:bg-[#202124] border border-gray-200 dark:border-[#3c3c3c]">
+                                <label className="block text-[10px] font-bold text-gray-400 uppercase">Shared With:</label>
+                                
+                                {/* Selected users chips */}
+                                <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                                    {selectedUserIds.length === 0 ? (
+                                        <span className="text-[11px] text-gray-400 italic">No users selected yet</span>
+                                    ) : (
+                                        selectedUserIds.map(id => {
+                                            const user = usersList.find(u => String(u.id) === String(id));
+                                            return (
+                                                <div key={id} className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#1a73e8] text-white text-[10px] font-medium">
+                                                    <span>{user ? user.displayName : `User ${id}`}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedUserIds(prev => prev.filter(uid => uid !== id))}
+                                                        className="hover:text-red-300 font-bold focus:outline-none ml-1 cursor-pointer text-xs"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                {/* Search input & dropdown */}
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Search user..."
+                                        value={userSearch}
+                                        onChange={(e) => {
+                                            setUserSearch(e.target.value);
+                                            setDropdownOpen(true);
+                                        }}
+                                        onFocus={() => setDropdownOpen(true)}
+                                        className="w-full bg-white dark:bg-[#1e1e1e] border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs text-gray-800 dark:text-white outline-none"
+                                    />
+                                    {dropdownOpen && (
+                                        <div className="absolute left-0 right-0 mt-1 max-h-36 overflow-y-auto bg-white dark:bg-[#2d2d2d] border border-gray-300 dark:border-[#3c3c3c] rounded shadow-lg z-50">
+                                            {(() => {
+                                                const query = userSearch.toLowerCase().trim();
+                                                const filtered = usersList.filter(u => {
+                                                    if (u.username?.toLowerCase() === adminName?.toLowerCase()) return false;
+                                                    if (!query) return true;
+                                                    return (
+                                                        u.displayName?.toLowerCase().includes(query) ||
+                                                        u.email?.toLowerCase().includes(query) ||
+                                                        u.role?.toLowerCase().includes(query)
+                                                    );
+                                                });
+                                                
+                                                if (filtered.length === 0) {
+                                                    return <div className="p-2 text-xs text-gray-400 italic text-center">No users found</div>;
+                                                }
+                                                
+                                                return filtered.map(u => {
+                                                    const isChecked = selectedUserIds.includes(u.id);
+                                                    return (
+                                                        <div
+                                                            key={u.id}
+                                                            onClick={() => {
+                                                                if (isChecked) {
+                                                                    setSelectedUserIds(prev => prev.filter(id => id !== u.id));
+                                                                } else {
+                                                                    setSelectedUserIds(prev => [...prev, u.id]);
+                                                                }
+                                                            }}
+                                                            className="flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-[#3c3c3c] cursor-pointer text-xs border-b last:border-0 border-gray-100 dark:border-[#3c3c3c]"
+                                                        >
+                                                            <div className="flex flex-col">
+                                                                <span className="font-semibold text-gray-850 dark:text-white">{u.displayName}</span>
+                                                                <span className="text-[10px] text-gray-400">{u.role} • {u.email}</span>
+                                                            </div>
+                                                            <div className={`w-3.5 h-3.5 rounded-[3px] flex items-center justify-center border transition-all ${isChecked ? 'border-transparent text-white bg-[#1a73e8]' : 'border-gray-400 dark:border-gray-650 bg-transparent'}`}>
+                                                                {isChecked && <i className="bi bi-check-lg text-[10px]"></i>}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                });
+                                            })()}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Room Location (Conflict Audit Target) */}
+                        <div className="flex gap-2 items-center">
+                            <span className="text-xs text-gray-400 w-20">Room:</span>
+                            <input
+                                type="text"
+                                placeholder="Conference A, Lab B (triggers checks)"
+                                value={room}
+                                onChange={(e) => setRoom(e.target.value)}
+                                className="flex-1 bg-transparent border border-gray-300 dark:border-[#3c3c3c] p-1.5 rounded text-xs text-gray-800 dark:text-white outline-none"
+                            />
+                        </div>
+
+                        {/* Notes / Description */}
+                        <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Notes</label>
+                            <textarea
+                                placeholder="Add optional details..."
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                rows="3"
+                                className="w-full bg-transparent border border-gray-350 dark:border-[#3c3c3c] p-2 rounded text-xs text-gray-800 dark:text-white outline-none resize-none"
+                            />
+                        </div>
+
+                        {/* Footer buttons */}
+                        <div className="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-[#3c3c3c]">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-4 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-all"
+                                style={{color:'#a5a8d4', background:'rgba(99,102,241,0.08)', border:'1px solid rgba(99,102,241,0.2)'}}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="px-5 py-1.5 text-xs font-bold rounded-lg cursor-pointer"
+                                style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)', color:'white', boxShadow:'0 0 14px rgba(99,102,241,0.5)'}}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    // --- COMPONENT: EVENTDETAILPOPOVER ---
+    function EventDetailPopover({
+        isOpen,
+        event,
+        coords,
+        onClose,
+        onEditClick,
+        onDeleteClick,
+        onToggleComplete,
+        conflicts = [],
+        adminName,
+        usersList = []
+    }) {
+        if (!isOpen || !event) return null;
+
+        const start = new Date(event.start);
+        const end = new Date(event.end);
+
+        const categoryLabels = {
+            admin: 'Admin Event',
+            exams: 'Examination Session',
+            tasks: 'General Task',
+            holidays: 'Public Holiday',
+            birthdays: 'Birthday Reminder'
+        };
+
+        const catColors = {
+            admin: '#1a73e8',
+            exams: '#7986cb',
+            tasks: '#0b8043',
+            holidays: '#0f9d58',
+            birthdays: '#33b679'
+        };
+
+        const cat = getEventCategory(event);
+        const label = categoryLabels[cat] || 'Calendar Event';
+        const color = catColors[cat] || '#64748b';
+
+        const getStyle = () => {
+            if (!coords) return {};
+            const width = 340;
+            const height = 280;
+            const padding = 20;
+
+            let left = coords.x + 10;
+            let top = coords.y - 80;
+
+            if (typeof window !== 'undefined') {
+                if (left + width > window.innerWidth) {
+                    left = coords.x - width - 10;
+                }
+                if (top + height > window.innerHeight) {
+                    top = window.innerHeight - height - padding;
+                }
+                if (top < padding) {
+                    top = padding;
+                }
+            }
+
+            return {
+                position: 'absolute',
+                left: `${left}px`,
+                top: `${top}px`,
+                zIndex: 40
+            };
+        };
+
+        const canDelete = (event.createdBy?.toLowerCase() === adminName?.toLowerCase() || event.createdBy === 'System') && event.eventType !== 'HOLIDAY';
+        const isCreator = event.createdBy?.toLowerCase() === adminName?.toLowerCase();
+        const isAssignee = event.assignedTo?.toLowerCase() === adminName?.toLowerCase();
+        const isEveryone = ['everyone', 'all'].includes(event.assignedTo?.toLowerCase());
+        const isShared = event.visibility?.toUpperCase() === 'SHARED';
+        const isPublic = event.visibility?.toUpperCase() === 'PUBLIC';
+        const canComplete = isCreator || isAssignee || isEveryone || isShared || isPublic;
+
+        return (
+            <div 
+                style={getStyle()} 
+                className="w-[330px] bg-white dark:bg-[#2d2d2d] rounded-xl border border-gray-205 dark:border-[#3c3c3c] text-gray-800 dark:text-[#e8eaed] font-sans overflow-hidden"
+            >
+                {/* Actions top bar */}
+                <div className="flex items-center justify-between px-3.5 py-1.5 bg-gray-50 dark:bg-[#202124] border-b border-gray-205 dark:border-[#3c3c3c]">
+                    <div className="flex items-center gap-2">
+                        <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-450">
+                            {label}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-0.5">
+                        {event.eventType !== 'HOLIDAY' && (
+                            <button onClick={() => onEditClick(event)} className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#3c3c3c] text-gray-600 dark:text-gray-300" title="Edit">
+                                <i className="bi bi-pencil-fill text-xs"></i>
+                            </button>
+                        )}
+                        {canDelete && (
+                            <button onClick={() => onDeleteClick(event.id)} className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#3c3c3c] text-red-650 dark:text-red-400" title="Delete">
+                                <i className="bi bi-trash-fill text-xs"></i>
+                            </button>
+                        )}
+                        <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#3c3c3c] text-gray-450 dark:text-gray-400">
+                            <i className="bi bi-x-lg text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Details body */}
+                <div className="p-4 space-y-3">
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white leading-snug">{event.title}</h3>
+
+                    <div className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-gray-300">
+                        <i className="bi bi-clock text-gray-500 mt-0.5"></i>
+                        <div>
+                            <div className="font-semibold">{dateHelpers.format(start, 'EEEE, MMMM d, yyyy')}</div>
+                            <div className="text-gray-550 dark:text-gray-400 mt-0.5">{dateHelpers.format(start, 'hh:mm a')} - {dateHelpers.format(end, 'hh:mm a')}</div>
+                        </div>
+                    </div>
+
+                    {/* Room details */}
+                    {event.room && (
+                        <div className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-gray-300">
+                            <i className="bi bi-geo-alt-fill text-gray-500 mt-0.5"></i>
+                            <div>
+                                <span className="font-semibold">Room: </span>
+                                <span className="text-gray-550 dark:text-gray-400">{event.room}</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Status Badge */}
+                    <div className="flex gap-2 items-center text-xs">
+                        <span className="text-gray-550 dark:text-gray-400">Status:</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${event.status === 'Completed' ? 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/40' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40'}`}>
+                            {event.status}
+                        </span>
+                    </div>
+
+                    {/* Creator & Visibility Details */}
+                    <div className="flex flex-col gap-1.5 text-xs border-t border-gray-200 dark:border-[#3c3c3c] pt-2.5">
+                        <div className="flex justify-between">
+                            <span className="text-gray-550 dark:text-gray-400">Created By:</span>
+                            <span className="font-semibold text-gray-700 dark:text-white">{event.createdBy}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-gray-550 dark:text-gray-400">Visibility:</span>
+                            <span className="font-semibold text-gray-700 dark:text-white capitalize">{event.visibility?.toLowerCase()}</span>
+                        </div>
+                        {event.visibility?.toUpperCase() === 'SHARED' && (
+                            <div className="mt-1">
+                                <span className="text-gray-550 dark:text-gray-400 block mb-1">Shared With:</span>
+                                <div className="space-y-1 pl-2">
+                                    {(() => {
+                                        const ids = (event.sharedWith || '').split(',').filter(Boolean);
+                                        if (ids.length === 0) return <div className="text-gray-400 italic">No one</div>;
+                                        return ids.map(id => {
+                                            const u = usersList.find(user => String(user.id) === String(id));
+                                            return (
+                                                <div key={id} className="flex items-center gap-1.5 text-xs text-gray-750 dark:text-gray-300">
+                                                    <i className="bi bi-check-circle-fill text-green-550 text-[10px]"></i>
+                                                    <span>{u ? u.displayName : `User ${id}`}</span>
+                                                </div>
+                                            );
+                                        });
+                                    })()}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Notes details */}
+                    {event.description && (
+                        <div className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-[#3c3c3c] pt-2.5">
+                            <i className="bi bi-list-stars text-gray-500 mt-0.5"></i>
+                            <div className="italic text-gray-550 dark:text-gray-400 whitespace-pre-wrap select-text">
+                                "{cleanDescription(event.description)}"
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Task toggle complete btn */}
+                    {event.eventType === 'TASK' && canComplete && (
+                        <div className="pt-2 border-t border-gray-200 dark:border-[#3c3c3c]">
+                            <button
+                                onClick={() => {
+                                    onToggleComplete(event.id);
+                                    onClose();
+                                }}
+                                className={`w-full py-1.5 rounded font-bold text-xs cursor-pointer transition-colors ${event.status === 'Completed' ? 'bg-gray-100 dark:bg-[#3c3c3c] text-gray-750 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#4c4c4c]' : 'bg-[#1a73e8] text-white hover:bg-blue-600'}`}
+                            >
+                                {event.status === 'Completed' ? '✓ Completed (Mark Pending)' : 'Mark Completed'}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Conflicts warnings */}
+                    {conflicts.length > 0 && (
+                        <div className="border-t border-red-200 dark:border-red-900/40 pt-2.5">
+                            <div className="flex items-center gap-2 text-red-650 dark:text-red-400 text-xs font-bold mb-1.5">
+                                <i className="bi bi-exclamation-octagon-fill"></i>
+                                <span>Schedule Overlaps ({conflicts.length})</span>
+                            </div>
+                            <ul className="text-[10px] list-disc list-inside text-red-650 dark:text-red-400 bg-red-50 dark:bg-red-950/20 p-2 rounded border border-red-200 dark:border-red-900/20 space-y-1">
+                                {conflicts.map((c, idx) => (
+                                    <li key={idx} className="leading-normal">{c.message}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // --- COMPONENT: CONFLICTPANEL ---
+    function ConflictPanel({
+        isOpen,
+        onClose,
+        globalConflicts,
+        onNavigateToDate
+    }) {
+        if (!isOpen) return null;
+
+        return (
+            <aside className="w-72 border-l flex flex-col bg-white dark:bg-[#1a1a1a] border-[#dadce0] dark:border-[#3c3c3c] h-full flex-shrink-0 select-none animate-in slide-in-from-right duration-150 z-20">
+                <div className="p-4 border-b border-[#dadce0] dark:border-[#3c3c3c] flex items-center justify-between bg-gray-50/50 dark:bg-[#202124]/50">
+                    <span className="font-bold text-gray-800 dark:text-[#e8eaed] text-xs uppercase tracking-wider">
+                        Conflict Auditor
+                    </span>
+                    <button onClick={onClose} className="text-gray-450 hover:text-gray-855 dark:hover:text-white"><i className="bi bi-x-lg text-xs"></i></button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {globalConflicts.length === 0 ? (
+                        <div className="text-center text-gray-400 dark:text-gray-600 py-12 px-2">
+                            <i className="bi bi-calendar-check text-3xl opacity-40 mb-2 block"></i>
+                            <p className="text-xs font-bold">No active conflicts detected!</p>
+                            <p className="text-[10px] mt-1">Schedules are verified, room double-bookings and exams separations are clean.</p>
+                        </div>
+                    ) : (
+                        globalConflicts.map(conf => (
+                            <div
+                                key={conf.id}
+                                onClick={() => onNavigateToDate(new Date(conf.date))}
+                                className="p-3 bg-red-50/20 dark:bg-red-950/10 border border-red-200/50 dark:border-red-900/20 rounded-lg hover:bg-red-50/40 dark:hover:bg-red-950/20 cursor-pointer transition-colors"
+                            >
+                                <span className="text-[9px] font-bold text-red-500 uppercase tracking-widest block mb-1">
+                                    {conf.type === 'room-booking' ? 'Room Clash' : (conf.type === 'exam-buffer' ? 'Exam Buffer' : 'Time Overlap')}
+                                </span>
+                                <p className="text-xs font-bold text-gray-900 dark:text-gray-100 select-text leading-tight mb-2">
+                                    {conf.description}
+                                </p>
+                                <div className="flex justify-between items-center text-[10px] text-gray-500 dark:text-gray-400">
+                                    <span>{dateHelpers.format(new Date(conf.date), 'MMM d, yyyy')}</span>
+                                    <span className="text-[#1a73e8] font-bold">Go To Date →</span>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </aside>
+        );
+    }
+
+    // --- COMPONENT: DAYEVENTSPOPOVER ---
+    function DayEventsPopover({
+        isOpen,
+        date,
+        events,
+        categoryFilters,
+        conflictsMap,
+        coords,
+        onClose,
+        onEventClick,
+        darkMode
+    }) {
+        const popoverRef = useRef(null);
+
+        useEffect(() => {
+            function handleClickOutside(event) {
+                if (popoverRef.current && !popoverRef.current.contains(event.target)) {
+                    if (!event.target.closest('.overflow-link')) {
+                        onClose();
+                    }
+                }
+            }
+            if (isOpen) {
+                document.addEventListener('mousedown', handleClickOutside);
+            }
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }, [isOpen, onClose]);
+
+        if (!isOpen || !date) return null;
+
+        const dayEvents = events.filter(e => {
+            const s = new Date(e.start);
+            if (!dateHelpers.isSameDay(s, date)) return false;
+            const cat = getEventCategory(e);
+            return categoryFilters[cat];
+        }).sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
+        const getStyle = () => {
+            if (!coords) return {};
+            const width = 320;
+            const height = 300;
+            const padding = 20;
+
+            let left = coords.x - width / 2;
+            let top = coords.y - 100;
+
+            if (typeof window !== 'undefined') {
+                if (left + width > window.innerWidth) {
+                    left = window.innerWidth - width - padding;
+                }
+                if (left < padding) {
+                    left = padding;
+                }
+                if (top + height > window.innerHeight) {
+                    top = window.innerHeight - height - padding;
+                }
+                if (top < padding) {
+                    top = padding;
+                }
+            }
+
+            return {
+                position: 'absolute',
+                left: `${left}px`,
+                top: `${top}px`,
+                zIndex: 45
+            };
+        };
+
+        const categoryColors = {
+            admin:     { bg: 'rgba(59,130,246,0.15)',  text: '#93c5fd', border: '#3b82f6' },
+            exams:     { bg: 'rgba(99,102,241,0.15)',  text: '#a5b4fc', border: '#6366f1' },
+            tasks:     { bg: 'rgba(245,158,11,0.15)',  text: '#fcd34d', border: '#f59e0b' },
+            holidays:  { bg: 'rgba(16,185,129,0.15)',  text: '#6ee7b7', border: '#10b981' },
+            birthdays: { bg: 'rgba(236,72,153,0.15)',  text: '#f9a8d4', border: '#ec4899' },
+        };
+        const lightCategoryColors = {
+            admin:     { bg: '#EEF2FF', text: '#4338CA', border: '#818cf8' },
+            exams:     { bg: '#EDE9FE', text: '#6D28D9', border: '#7c3aed' },
+            tasks:     { bg: '#FFFBEB', text: '#92400E', border: '#d97706' },
+            holidays:  { bg: '#D1FAE5', text: '#065F46', border: '#059669' },
+            birthdays: { bg: '#FCE7F3', text: '#9D174D', border: '#db2777' },
+        };
+
+        const formattedDate = dateHelpers.format(date, 'EEEE, MMMM d');
+
+        return (
+            <div 
+                ref={popoverRef}
+                style={getStyle()} 
+                className="w-[320px] max-h-[360px] bg-white dark:bg-[#181824] rounded-xl border border-gray-200 dark:border-indigo-950/40 text-gray-800 dark:text-[#e8eaed] font-sans flex flex-col overflow-hidden shadow-2xl animate-modal"
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#202124] border-b border-gray-200 dark:border-[#3c3c3c]">
+                    <span className="text-xs font-bold text-gray-550 dark:text-gray-450 uppercase tracking-wider">
+                        {formattedDate}
+                    </span>
+                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-white/5 text-gray-450 dark:text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+                        <i className="bi bi-x-lg text-xs"></i>
+                    </button>
+                </div>
+
+                {/* Event list */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-2 max-h-[300px]">
+                    {dayEvents.length === 0 ? (
+                        <div className="text-center py-6 text-xs text-gray-400 dark:text-gray-500 italic">
+                            No events today
+                        </div>
+                    ) : (
+                        dayEvents.map(event => {
+                            const conflicts = conflictsMap[event.id] || [];
+                            const isConflicting = conflicts.length > 0;
+                            const cat = getEventCategory(event);
+                            const colors = darkMode ? categoryColors[cat] : lightCategoryColors[cat];
+                            const start = new Date(event.start);
+                            const end = new Date(event.end);
+                            const timeStr = `${dateHelpers.format(start, 'hh:mm a')} – ${dateHelpers.format(end, 'hh:mm a')}`;
+
+                            return (
+                                <div
+                                    key={event.id}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onEventClick(event, { x: e.clientX, y: e.clientY });
+                                    }}
+                                    className="p-2.5 rounded-lg border text-xs font-semibold flex flex-col gap-1 cursor-pointer transition-all hover:translate-x-0.5 hover:shadow-md"
+                                    style={{
+                                        background: colors?.bg || 'rgba(99,102,241,0.15)',
+                                        color: colors?.text || '#a5b4fc',
+                                        border: `1px solid ${colors?.border || '#6366f1'}33`,
+                                        borderLeft: `3px solid ${colors?.border || '#6366f1'}`,
+                                    }}
+                                >
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate text-[12px] font-bold">{event.title}</span>
+                                        {isConflicting && (
+                                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0 animate-pulse" />
+                                        )}
+                                    </div>
+                                    <div className="text-[10px] font-medium opacity-80 flex items-center gap-1">
+                                        <i className="bi bi-clock"></i>
+                                        <span>{timeStr}</span>
+                                        {event.room && (
+                                            <>
+                                                <span>•</span>
+                                                <i className="bi bi-geo-alt"></i>
+                                                <span className="truncate">{event.room}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // --- MAIN REACT CONTAINER (App) ---
+    function App() {
+        const adminName = window.loggedInAdminName || 'Super Admin';
+        const allAdmins = window.allAdminsList || [];
+
+        const [currentDate, setCurrentDate] = useState(new Date());
+        const [currentView, setCurrentView] = useState('month');
+        const [events, setEvents] = useState([]);
+        const [categoryFilters, setCategoryFilters] = useState({
+            admin: true,
+            exams: true,
+            tasks: true,
+            holidays: true,
+            birthdays: true
+        });
+        const [searchQuery, setSearchQuery] = useState('');
+        const [visibleAdmins, setVisibleAdmins] = useState({});
+
+        useEffect(() => {
+            if (allAdmins.length > 0) {
+                const initial = {};
+                allAdmins.forEach(name => {
+                    if (name.toLowerCase() !== adminName.toLowerCase()) {
+                        initial[name] = true;
+                    }
+                });
+                setVisibleAdmins(prev => ({ ...initial, ...prev }));
+            }
+        }, [allAdmins, adminName]);
+
+        const [sidebarOpen, setSidebarOpen] = useState(true);
+        const [conflictCheckOpen, setConflictCheckOpen] = useState(false);
+        const [darkMode, setDarkMode] = useState(() => {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme) {
+                return savedTheme === "dark";
+            }
+            return document.body.classList.contains('dark-theme');
+        });
+
+        // Synchronize dark-theme status with Tailwind's class-based mode and global classes
+        useEffect(() => {
+            const themeSwitch = document.getElementById("theme-toggle-switch");
+            if (darkMode) {
+                document.documentElement.classList.add('dark', 'dark-theme');
+                document.body.classList.add('dark', 'dark-theme');
+                localStorage.setItem("theme", "dark");
+                if (themeSwitch) themeSwitch.checked = true;
+            } else {
+                document.documentElement.classList.remove('dark', 'dark-theme');
+                document.body.classList.remove('dark', 'dark-theme');
+                localStorage.setItem("theme", "light");
+                if (themeSwitch) themeSwitch.checked = false;
+            }
+            window.dispatchEvent(new Event('themeChanged'));
+        }, [darkMode]);
+
+        // Modals state
+        const [modalOpen, setModalOpen] = useState(false);
+        const [modalMode, setModalMode] = useState('quick');
+        const [selectedCellDate, setSelectedCellDate] = useState(null);
+        const [editEvent, setEditEvent] = useState(null);
+        const [popoverCoords, setPopoverCoords] = useState(null);
+
+        // Details Popover state
+        const [detailOpen, setDetailOpen] = useState(false);
+        const [detailEvent, setDetailEvent] = useState(null);
+        const [detailCoords, setDetailCoords] = useState(null);
+
+        // Day Events Popover state
+        const [dayEventsOpen, setDayEventsOpen] = useState(false);
+        const [dayEventsDate, setDayEventsDate] = useState(null);
+        const [dayEventsCoords, setDayEventsCoords] = useState(null);
+
+        // Fetch events from Spring Boot REST API
+        const loadAllEvents = useCallback(() => {
+            fetch('/admin/calendar/events')
+                .then(res => res.json())
+                .then(data => {
+                    // Map backend data model to React Calendar model
+                    const mapped = data.map(e => {
+                        const roomVal = parseRoomFromDescription(e.description);
+                        return {
+                            id: e.id,
+                            title: e.title,
+                            description: e.description,
+                            category: e.category,
+                            eventType: e.eventType,
+                            priority: e.priority,
+                            status: e.status,
+                            createdBy: e.createdBy,
+                            assignedTo: e.assignedTo,
+                            visibility: e.visibility,
+                            sharedWith: e.sharedWith,
+                            start: e.startDatetime,
+                            end: e.endDatetime,
+                            room: roomVal
+                        };
+                    });
+                    setEvents(mapped);
+                })
+                .catch(err => console.error("Failed to load events", err));
+        }, []);
+
+        const [usersList, setUsersList] = useState([]);
+
+        useEffect(() => {
+            loadAllEvents();
+            // Fetch users list from database dynamically
+            fetch('/admin/calendar/users')
+                .then(res => res.json())
+                .then(data => setUsersList(data))
+                .catch(err => console.error("Failed to load users", err));
+
+            // Sync with backend theme class on window listener
+            const handleTheme = () => {
+                setDarkMode(document.body.classList.contains('dark-theme'));
+            };
+            window.addEventListener('themeChanged', handleTheme);
+            return () => window.removeEventListener('themeChanged', handleTheme);
+        }, [loadAllEvents]);
+
+        // Conflicts Audits
+        const { conflictsMap, globalConflicts } = useMemo(() => {
+            return detectConflicts(events);
+        }, [events]);
+
+        // Filters applied to Grid render only
+        const filteredEvents = useMemo(() => {
+            return events.filter(e => {
+                // Exclude birthday events as per user's strict request
+                const isBday = e.title?.toLowerCase().includes('birthday') || e.category?.toLowerCase().includes('birthday');
+                if (isBday) return false;
+
+                if (searchQuery.trim()) {
+                    const q = searchQuery.toLowerCase();
+                    const match = e.title?.toLowerCase().includes(q) || e.description?.toLowerCase().includes(q) || e.room?.toLowerCase().includes(q);
+                    if (!match) return false;
+                }
+
+                // Checkboxes control visibility only (do not affect private tasks of current user)
+                if (e.visibility?.toUpperCase() === 'PUBLIC' && e.createdBy) {
+                    const creator = e.createdBy;
+                    if (creator.toLowerCase() !== adminName.toLowerCase() && creator !== 'System') {
+                        const matchingKey = Object.keys(visibleAdmins).find(
+                            k => k.toLowerCase() === creator.toLowerCase()
+                        );
+                        if (matchingKey && !visibleAdmins[matchingKey]) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            });
+        }, [events, searchQuery, visibleAdmins, adminName]);
+
+        // Save event handler
+        const handleSaveEvent = (data) => {
+            const formData = new FormData();
+            
+            // Format title
+            let finalTitle = data.title;
+            let finalDesc = data.description;
+            if (data.room) {
+                finalDesc = `${finalDesc}\n[Room: ${data.room}]`;
+            }
+
+            formData.append('title', finalTitle);
+            formData.append('description', finalDesc);
+            formData.append('category', data.category);
+            formData.append('eventType', data.eventType);
+            formData.append('priority', data.priority);
+            
+            formData.append('visibility', data.visibility);
+            formData.append('sharedWith', data.sharedWith || '');
+            
+            formData.append('assignedTo', data.assignedTo);
+            formData.append('date', data.dateStr);
+            formData.append('startTime', data.startTime);
+            formData.append('endTime', data.endTime);
+
+            const performAdd = () => {
+                fetch('/admin/calendar/event/add', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === 'success') {
+                        loadAllEvents();
+                    } else {
+                        alert('Error saving event: ' + response.message);
+                    }
+                })
+                .catch(err => console.error(err));
+            };
+
+            // If editing an existing event: delete old one first, then add updated one
+            if (data.id) {
+                const params = new URLSearchParams();
+                params.append('id', data.id);
+
+                fetch('/admin/calendar/event/delete', {
+                    method: 'POST',
+                    body: params
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === 'success') {
+                        performAdd();
+                    } else {
+                        alert('Could not update event: ' + response.message);
+                    }
+                })
+                .catch(err => console.error(err));
+            } else {
+                performAdd();
+            }
+        };
+
+        // Delete event handler
+        const handleDeleteEvent = (id) => {
+            const params = new URLSearchParams();
+            params.append('id', id);
+
+            fetch('/admin/calendar/event/delete', {
+                method: 'POST',
+                body: params
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    loadAllEvents();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => console.error(err));
+        };
+
+        // Toggle task completion
+        const handleToggleComplete = (id) => {
+            const params = new URLSearchParams();
+            params.append('id', id);
+
+            fetch('/admin/calendar/event/toggle-complete', {
+                method: 'POST',
+                body: params
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    loadAllEvents();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => console.error(err));
+        };
+
+        // Navigation controls
+        const handleNavigateToday = () => {
+            setDayEventsOpen(false);
+            setCurrentDate(new Date());
+        };
+        const handleNavigatePrev = () => {
+            setDayEventsOpen(false);
+            if (currentView === 'month') setCurrentDate(prev => dateHelpers.subMonths(prev, 1));
+            else if (currentView === 'week') setCurrentDate(prev => dateHelpers.subWeeks(prev, 1));
+            else setCurrentDate(prev => dateHelpers.subDays(prev, 1));
+        };
+        const handleNavigateNext = () => {
+            setDayEventsOpen(false);
+            if (currentView === 'month') setCurrentDate(prev => dateHelpers.addMonths(prev, 1));
+            else if (currentView === 'week') setCurrentDate(prev => dateHelpers.addWeeks(prev, 1));
+            else setCurrentDate(prev => dateHelpers.addDays(prev, 1));
+        };
+
+        const handleCellClick = (date, coords) => {
+            setDayEventsOpen(false);
+            setDetailOpen(false);
+            setEditEvent(null);
+            setSelectedCellDate(date);
+            setPopoverCoords(coords);
+            setModalMode('quick');
+            setModalOpen(true);
+        };
+
+        const handleEventClick = (event, coords) => {
+            setDayEventsOpen(false);
+            setModalOpen(false);
+            setDetailEvent(event);
+            setDetailCoords(coords);
+            setDetailOpen(true);
+        };
+
+        const handleMoreClick = (date, coords) => {
+            setModalOpen(false);
+            setDetailOpen(false);
+            setDayEventsDate(date);
+            setDayEventsCoords(coords);
+            setDayEventsOpen(true);
+        };
+
+        const handleEditClickFromDetail = (event) => {
+            setEditEvent(event);
+            setModalMode('full');
+            setModalOpen(true);
+        };
+
+        const handleCreateButtonClick = () => {
+            setDetailOpen(false);
+            setEditEvent(null);
+            setSelectedCellDate(new Date(currentDate));
+            setPopoverCoords(null);
+            setModalMode('full');
+            setModalOpen(true);
+        };
+
+        const handleConflictNavigate = (date) => {
+            setCurrentDate(date);
+            setCurrentView('day');
+        };
+
+        return (
+            <div className="flex flex-col h-full w-full overflow-hidden" style={{background: darkMode ? '#0a0a0f' : '#f8f9fa', color: darkMode ? '#f0f0ff' : '#1e2030'}}>
+                <Topbar
+                    currentDate={currentDate}
+                    onNavigateToday={handleNavigateToday}
+                    onNavigatePrev={handleNavigatePrev}
+                    onNavigateNext={handleNavigateNext}
+                    currentView={currentView}
+                    setCurrentView={setCurrentView}
+                    sidebarOpen={sidebarOpen}
+                    setSidebarOpen={setSidebarOpen}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    darkMode={darkMode}
+                    setDarkMode={setDarkMode}
+                    categoryFilters={categoryFilters}
+                    setCategoryFilters={setCategoryFilters}
+                />
+
+                <div className="flex flex-1 overflow-hidden relative">
+                    {sidebarOpen && (
+                        <Sidebar
+                            events={filteredEvents}
+                            currentDate={currentDate}
+                            setCurrentDate={setCurrentDate}
+                            categoryFilters={categoryFilters}
+                            setCategoryFilters={setCategoryFilters}
+                            conflictCheckOpen={conflictCheckOpen}
+                            setConflictCheckOpen={setConflictCheckOpen}
+                            globalConflicts={globalConflicts}
+                            onCreateEventClick={handleCreateButtonClick}
+                            adminName={adminName}
+                            allAdmins={allAdmins}
+                            visibleAdmins={visibleAdmins}
+                            setVisibleAdmins={setVisibleAdmins}
+                        />
+                    )}
+
+                    <main className="flex-grow-1 flex flex-col min-w-0 h-full relative overflow-hidden" style={{background: darkMode ? '#0a0a0f' : '#f8f9fa'}}>
+                        {currentView === 'month' && (
+                            <MonthView
+                                currentDate={currentDate}
+                                events={filteredEvents}
+                                categoryFilters={categoryFilters}
+                                conflictsMap={conflictsMap}
+                                onCellClick={handleCellClick}
+                                onEventClick={handleEventClick}
+                                darkMode={darkMode}
+                                onMoreClick={handleMoreClick}
+                            />
+                        )}
+                        {currentView === 'week' && (
+                            <WeekView
+                                currentDate={currentDate}
+                                events={filteredEvents}
+                                categoryFilters={categoryFilters}
+                                conflictsMap={conflictsMap}
+                                onCellClick={handleCellClick}
+                                onEventClick={handleEventClick}
+                            />
+                        )}
+                        {currentView === 'day' && (
+                            <DayView
+                                currentDate={currentDate}
+                                events={filteredEvents}
+                                categoryFilters={categoryFilters}
+                                conflictsMap={conflictsMap}
+                                onCellClick={handleCellClick}
+                                onEventClick={handleEventClick}
+                            />
+                        )}
+                    </main>
+
+                    <ConflictPanel
+                        isOpen={conflictCheckOpen}
+                        onClose={() => setConflictCheckOpen(false)}
+                        globalConflicts={globalConflicts}
+                        onNavigateToDate={handleConflictNavigate}
+                    />
+
+                    <CreateEventModal
+                        isOpen={modalOpen}
+                        onClose={() => setModalOpen(false)}
+                        onSave={handleSaveEvent}
+                        selectedDate={selectedCellDate}
+                        editEvent={editEvent}
+                        popoverCoords={popoverCoords}
+                        mode={modalMode}
+                        setMode={setModalMode}
+                        allAdmins={allAdmins}
+                        adminName={adminName}
+                        usersList={usersList}
+                    />
+
+                    <EventDetailPopover
+                        isOpen={detailOpen}
+                        event={detailEvent}
+                        coords={detailCoords}
+                        onClose={() => setDetailOpen(false)}
+                        onEditClick={handleEditClickFromDetail}
+                        onDeleteClick={handleDeleteEvent}
+                        onToggleComplete={handleToggleComplete}
+                        conflicts={detailEvent ? conflictsMap[detailEvent.id] : []}
+                        adminName={adminName}
+                        usersList={usersList}
+                    />
+
+                    <DayEventsPopover
+                        isOpen={dayEventsOpen}
+                        date={dayEventsDate}
+                        events={filteredEvents}
+                        categoryFilters={categoryFilters}
+                        conflictsMap={conflictsMap}
+                        coords={dayEventsCoords}
+                        onClose={() => setDayEventsOpen(false)}
+                        onEventClick={(event, coords) => {
+                            setDayEventsOpen(false);
+                            handleEventClick(event, coords);
+                        }}
+                        darkMode={darkMode}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    // --- Mount application ---
+    const rootEl = document.getElementById('react-calendar-root');
+    if (rootEl) {
+        const root = ReactDOM.createRoot(rootEl);
+        root.render(<App />);
+    }
+/*]]>*/
+</script>
+</body>
+</html>

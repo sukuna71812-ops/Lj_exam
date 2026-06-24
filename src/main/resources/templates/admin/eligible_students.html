@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Eligibility List - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --primary: #ff6b00;
+            --primary-hover: #ea580c;
+            --primary-gradient: linear-gradient(135deg, #ff8a3d 0%, #ff6b00 100%);
+            --sidebar-width: 260px;
+            --bg-canvas: #f8fafc;
+            --card-bg: rgba(255,255,255,0.9);
+            --border-color: rgba(0,0,0,0.06);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.04);
+            --card-shadow-hover: 0 16px 36px -12px rgba(255,107,0,0.08);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body.dark-theme {
+            --bg-canvas: #090d16;
+            --card-bg: rgba(17,24,39,0.85);
+            --border-color: rgba(255,255,255,0.07);
+            --text-primary: #f9fafb;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            --card-shadow-hover: 0 16px 36px -12px rgba(255,107,0,0.15);
+        }
+        body { background-color: var(--bg-canvas); color: var(--text-secondary); font-family:'Inter',sans-serif; font-size:14px; min-height:100vh; transition: var(--transition); }
+        .main-content { margin-left: var(--sidebar-width); padding: 2.5rem; transition: var(--transition); }
+        @media(max-width:991.98px){ .main-content { margin-left:0; padding:1.25rem; } }
+
+        /* Cards */
+        .card { background: var(--card-bg); border:1px solid var(--border-color) !important; border-radius:18px !important; box-shadow: var(--card-shadow) !important; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); transition:var(--transition); position: relative; overflow: hidden; }
+        .card:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-hover) !important; }
+
+        /* Stat cards */
+        .stat-card { border-radius:16px !important; padding: 1.25rem 1.5rem; display:flex; align-items:center; gap:1rem; }
+        .stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0; }
+        .stat-value { font-family:'Outfit',sans-serif; font-size:1.75rem; font-weight:800; color:var(--text-primary); line-height:1; }
+        .stat-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-muted); margin-top:2px; }
+
+        /* Exam summary card */
+        .exam-summary-card { border-radius:18px !important; padding:1.5rem; border:1px solid var(--border-color) !important; background:var(--card-bg); transition:var(--transition); }
+        .exam-summary-card:hover { transform:translateY(-4px); box-shadow: var(--card-shadow-hover) !important; }
+
+        /* Table */
+        .table-responsive { background:var(--card-bg); border-radius:16px; border:1px solid var(--border-color); box-shadow:var(--card-shadow); backdrop-filter:blur(16px); }
+        .table thead th { font-family:'Outfit',sans-serif; font-weight:700 !important; font-size:11px !important; text-transform:uppercase !important; letter-spacing:0.5px !important; padding:1.1rem 1.25rem !important; color:var(--text-primary) !important; background-color: rgba(0, 0, 0, 0.02) !important; border-bottom:1px solid var(--border-color); }
+        body.dark-theme .table thead th { background-color: rgba(255, 255, 255, 0.02) !important; }
+        .table tbody tr { border-bottom:1px solid var(--border-color); transition:var(--transition); }
+        .table tbody tr:hover { background-color:rgba(255,107,0,0.03) !important; }
+        .table tbody td { padding:1rem 1.25rem !important; vertical-align:middle; color: var(--text-secondary); }
+
+        /* Form controls */
+        .form-control, .form-select { background-color:var(--card-bg) !important; color:var(--text-primary) !important; border-radius:12px; border:1.5px solid var(--border-color); font-weight:500; padding: 0.6rem 1rem; transition:var(--transition); }
+        .form-control:focus, .form-select:focus { border-color:var(--primary) !important; box-shadow:0 0 0 4px rgba(255,107,0,0.12) !important; outline: none; }
+
+        /* Buttons */
+        .btn { font-family:'Outfit',sans-serif; font-weight:600; border-radius:12px; padding: 0.6rem 1.25rem; font-size:13px; transition:var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn-primary { background:var(--primary-gradient); border:none; color:white; box-shadow:0 4px 14px rgba(255,107,0,0.25); }
+        .btn-primary:hover { transform:translateY(-1.5px); box-shadow:0 6px 22px rgba(255,107,0,0.35); color:white; }
+        .btn-outline-primary { color:var(--primary); border:2px solid rgba(255,107,0,0.15); background:transparent; }
+        .btn-outline-primary:hover { background:var(--primary); border-color:var(--primary); color:white; transform:translateY(-1.5px); }
+
+        /* Pills */
+        .pill { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:4px 10px; border-radius:30px; text-transform:uppercase; letter-spacing:0.5px; }
+        .pill-success { background:rgba(16,185,129,0.1); color:#10b981; }
+        .pill-warning { background:rgba(245,158,11,0.1); color:#f59e0b; }
+        .pill-danger  { background:rgba(239,68,68,0.1);  color:#ef4444; }
+        .pill-info    { background:rgba(59,130,246,0.1);  color:#3b82f6; }
+        .pill-lock    { background:rgba(100,116,139,0.1); color:#64748b; }
+
+        /* Section title */
+        .section-title { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); }
+        .section-subtitle { font-size:12px; color:var(--text-muted); }
+
+        /* Upload drop zone */
+        .drop-zone { border:2px dashed rgba(255,107,0,0.25); border-radius:16px; padding:2.5rem 2rem; text-align:center; cursor:pointer; transition:var(--transition); background:rgba(255,107,0,0.01); position: relative; }
+        .drop-zone:hover, .drop-zone.dragover { border-color:var(--primary); background:rgba(255,107,0,0.03); transform: scale(1.01); }
+        .drop-zone i { font-size:2.8rem; color:rgba(255,107,0,0.4); transition: var(--transition); }
+        .drop-zone:hover i { color: var(--primary); transform: translateY(-3px); }
+
+        /* Lock banner */
+        .lock-banner { background:linear-gradient(135deg,rgba(100,116,139,0.08),rgba(100,116,139,0.04)); border:1.5px solid rgba(100,116,139,0.15); border-radius:14px; padding:1rem 1.25rem; }
+
+        /* Progress bar micro */
+        .mini-progress { height:6px; border-radius:10px; background:rgba(0,0,0,0.06); overflow:hidden; position: relative; }
+        body.dark-theme .mini-progress { background: rgba(255,255,255,0.06); }
+        .mini-progress-fill { height:100%; border-radius:10px; transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Inline edit */
+        .edit-field { border: 1.5px solid transparent; background: transparent; padding: 4px 8px; border-radius: 8px; font-size:inherit; font-weight:inherit; color:var(--text-primary); cursor:text; transition:var(--transition); width:100%; }
+        .edit-field:hover { background: rgba(255,107,0,0.03); border-color: rgba(255,107,0,0.15); }
+        .edit-field:focus { outline:none; background: var(--bg-canvas); border-color:var(--primary); box-shadow: 0 0 0 3px rgba(255,107,0,0.1); }
+
+        /* Page header gradient accent */
+        .page-header-accent { border-left:4px solid var(--primary); padding-left:1.25rem; }
+
+        .text-primary-custom { color: var(--primary) !important; }
+
+        /* Breadcrumb */
+        .breadcrumb-item a { color:var(--primary); text-decoration:none; }
+        .breadcrumb-item.active { color:var(--text-muted); }
+
+        /* Modern timeline feed for Upload History */
+        .activity-timeline { position: relative; padding-left: 20px; }
+        .activity-timeline::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: var(--border-color); }
+        .activity-item { position: relative; padding-bottom: 1.5rem; }
+        .activity-item:last-child { padding-bottom: 0; }
+        .activity-dot { position: absolute; left: -20px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg-canvas); border: 3px solid var(--primary); z-index: 2; transition: var(--transition); }
+        .activity-item:hover .activity-dot { transform: scale(1.2); box-shadow: 0 0 0 4px rgba(255,107,0,0.2); }
+        .activity-content { background: var(--bg-canvas); border: 1px solid var(--border-color); border-radius: 14px; padding: 0.9rem 1.1rem; transition: var(--transition); }
+        .activity-content:hover { border-color: rgba(255,107,0,0.15); transform: translateX(2px); }
+
+        /* Review mode header */
+        .review-header { background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.03)); border:1.5px solid rgba(245,158,11,0.2); border-radius:18px; padding:1.5rem 2rem; }
+
+        /* Sticky table header */
+        .sticky-header thead th { position:sticky; top:0; z-index:2; }
+
+        /* Stats row container inside exam summary cards */
+        .stats-row-container {
+            background: rgba(0, 0, 0, 0.02) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            transition: var(--transition);
+        }
+        body.dark-theme .stats-row-container {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-color: rgba(255, 255, 255, 0.07) !important;
+        }
+        body.dark-theme .stats-row-container .border-start,
+        body.dark-theme .stats-row-container .border-end {
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* Modern styled alerts for better dark theme visibility */
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            border: 1px solid rgba(16, 185, 129, 0.15) !important;
+            color: #065f46 !important;
+        }
+        body.dark-theme .alert-success {
+            background-color: rgba(16, 185, 129, 0.15) !important;
+            color: #34d399 !important;
+        }
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            border: 1px solid rgba(239, 68, 68, 0.15) !important;
+            color: #991b1b !important;
+        }
+        body.dark-theme .alert-danger {
+            background-color: rgba(239, 68, 68, 0.15) !important;
+            color: #f87171 !important;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div th:replace="~{admin/fragments :: sidebar('eligible-students')}"></div>
+
+<main class="main-content">
+    <div class="container-fluid">
+
+        <!-- ── Page Header ── -->
+        <div class="row align-items-center mb-4">
+            <div class="col-md-7">
+                <div class="page-header-accent">
+                    <h1 class="h2 mb-1" style="font-family:'Outfit',sans-serif; font-weight:800; color:var(--text-primary);">Student Eligibility List</h1>
+                    <p class="mb-0" style="font-size:13px; color:var(--text-muted);">Manage which students are permitted to appear for each examination.</p>
+                </div>
+            </div>
+            <div class="col-md-5 text-md-end mt-3 mt-md-0" th:if="${reviewMode != true}">
+                <button class="btn btn-primary px-4" data-bs-toggle="collapse" data-bs-target="#uploadSection">
+                    <i class="bi bi-cloud-upload-fill me-2"></i>Upload Student List
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Flash Messages ── -->
+        <div th:if="${successMessage != null}" class="alert alert-success alert-dismissible fade show border-0 rounded-4 mb-4 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+            <span th:text="${successMessage}">Done.</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage != null}" class="alert alert-danger alert-dismissible fade show border-0 rounded-4 mb-4 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+            <span th:text="${errorMessage}">Error.</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${uploadError != null}" class="alert alert-danger alert-dismissible fade show border-0 rounded-4 mb-4 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+            <span th:text="${uploadError}">Upload error.</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════
+             UPLOAD SECTION (collapsible)
+             ════════════════════════════════════════════════════ -->
+        <div class="collapse mb-4" id="uploadSection" th:if="${reviewMode != true}">
+            <div class="card p-4">
+                <h3 class="section-title mb-1"><i class="bi bi-cloud-upload me-2 text-primary-custom"></i>Upload Student Eligibility File</h3>
+                <p class="section-subtitle mb-4">Upload a PDF, Excel, or CSV file containing student enrollment numbers. The uploaded file becomes the official eligibility source.</p>
+
+                <form th:action="@{/admin/eligible-students/import}" method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-700" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted);">Select Examination</label>
+                            <select class="form-select" name="examTarget" id="examTargetSelect" required>
+                                <option value="" disabled selected>-- Select Exam or Paper --</option>
+                                <optgroup label="Traditional Exams">
+                                    <option th:each="exam : ${exams}"
+                                            th:value="'EXAM_' + ${exam.id}"
+                                            th:text="${exam.examName} + ' — Sem ' + ${exam.semester}"></option>
+                                </optgroup>
+                                <optgroup label="PDF-Based Papers">
+                                    <option th:each="paper : ${papers}"
+                                            th:value="'PAPER_' + ${paper.id}"
+                                            th:text="${paper.subject} + ' — Sem ' + ${paper.semester}"></option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-700" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted);">Upload File</label>
+                            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                                <input type="file" id="fileInput" name="file" accept=".pdf,.xlsx,.xls,.csv" class="d-none" required onchange="handleFileSelect(this)">
+                                <i class="bi bi-file-earmark-arrow-up mb-2 d-block"></i>
+                                <div id="dropZoneText">
+                                    <strong style="color:var(--primary);">Click to browse</strong> or drag &amp; drop<br>
+                                    <small class="text-muted">Supports PDF · Excel (.xlsx, .xls) · CSV</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-light border mb-0 rounded-3 py-2 px-3" style="font-size:12px;">
+                                <i class="bi bi-info-circle me-1 text-primary-custom"></i>
+                                <strong>Expected columns:</strong> Enrollment No, Student Name, Division, Roll No — Headers are auto-detected. Column order does not matter.
+                            </div>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="collapse" data-bs-target="#uploadSection">Cancel</button>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-upload me-2"></i>Parse &amp; Preview</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════
+             REVIEW / PREVIEW MODE (after file parse, before save)
+             ════════════════════════════════════════════════════ -->
+        <div th:if="${reviewMode == true}">
+
+            <!-- Review Header Banner -->
+            <div class="review-header mb-4">
+                <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+                    <div>
+                        <span class="pill pill-warning mb-2"><i class="bi py-1 bi-eye-fill"></i> Preview Mode</span>
+                        <h3 class="section-title mb-1">Verify Student Eligibility Records</h3>
+                        <p class="mb-0" style="font-size:13px; color:var(--text-muted);">
+                            Examination: <strong th:text="${targetExamName}" style="color:var(--text-primary);">Examination</strong>
+                            &nbsp;·&nbsp; File: <strong th:text="${fileName}" style="color:var(--text-primary);">file.csv</strong>
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a th:href="@{/admin/eligible-students}" class="btn btn-outline-primary"><i class="bi bi-x me-1"></i>Cancel</a>
+                        <button class="btn btn-primary px-4" onclick="submitFinalList()">
+                            <i class="bi bi-check-circle-fill me-2"></i>Save Eligibility List
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats row -->
+                <div class="row g-3 mt-3">
+                    <div class="col-auto">
+                        <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:var(--card-bg); border:1px solid var(--border-color);">
+                            <i class="bi bi-people-fill text-primary-custom fs-5"></i>
+                            <div>
+                                <div class="stat-value" id="stats-total" style="font-size:1.35rem;" th:text="${totalRecords}">0</div>
+                                <div class="stat-label" style="font-size:9px;">Total Parsed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2);">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            <div>
+                                <div class="stat-value text-success" id="stats-eligible" style="font-size:1.35rem;" th:text="${matchedStudents.size()}">0</div>
+                                <div class="stat-label" style="font-size:9px;">Will Be Eligible</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto" th:if="${invalidRecords != null}">
+                        <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2);">
+                            <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                            <div>
+                                <div class="stat-value text-danger" id="stats-failed" style="font-size:1.35rem;" th:text="${invalidRecords.size()}">0</div>
+                                <div class="stat-label" style="font-size:9px;">Failed Imports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Preview Table with inline add/remove -->
+            <div class="card p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div class="section-title"><i class="bi bi-table me-2 text-primary-custom"></i>Parsed Student Records</div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="position-relative" style="width:220px;">
+                            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                            <input type="text" class="form-control form-control-sm ps-5" id="previewSearch" placeholder="Search preview..." onkeyup="filterPreviewTable()">
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showManualAddForm()"><i class="bi bi-plus-circle me-1"></i>Add Student</button>
+                    </div>
+                </div>
+
+                <!-- Manual Add Form (hidden by default) -->
+                <div id="manualAddFormWrap" class="d-none mb-4 p-3 rounded-3 border border-dashed border-primary-subtle" style="background:rgba(255,107,0,0.02);">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Enrollment No *</label>
+                            <input type="text" class="form-control form-control-sm" id="manualEnroll" placeholder="e.g. 240045012101">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Student Name</label>
+                            <input type="text" class="form-control form-control-sm" id="manualName" placeholder="e.g. Raj Patel">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Division</label>
+                            <input type="text" class="form-control form-control-sm" id="manualDiv" placeholder="e.g. A">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Roll No</label>
+                            <input type="text" class="form-control form-control-sm" id="manualRoll" placeholder="e.g. 13">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-sm btn-primary w-100" onclick="addManualStudentPreview()"><i class="bi bi-plus me-1"></i>Add</button>
+                            <button class="btn btn-sm btn-link text-muted w-100 mt-1" style="font-size:11px;" onclick="hideManualAddForm()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive" style="max-height:420px; overflow-y:auto;">
+                    <table class="table mb-0 align-middle sticky-header" id="previewTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Enrollment No</th>
+                                <th>Student Name</th>
+                                <th>Division</th>
+                                <th>Roll No</th>
+                                <th class="text-end">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewTableBody">
+                            <tr th:each="student, iterStat : ${matchedStudents}"
+                                class="preview-row"
+                                th:id="'prow-' + ${student.enrollmentNo}"
+                                th:data-enrollment="${student.enrollmentNo}"
+                                th:data-name="${student.studentName}"
+                                th:data-division="${student.division}"
+                                th:data-roll="${student.rollNo}">
+                                <td class="text-muted" style="font-size:12px;" th:text="${iterStat.count}">1</td>
+                                <td class="fw-bold font-monospace" style="font-size:13px; color: var(--text-primary);" th:text="${student.enrollmentNo}">240045012101</td>
+                                <td th:text="${student.studentName}">Raj Patel</td>
+                                <td><span class="pill pill-info" th:text="${student.division}">A</span></td>
+                                <td class="font-monospace" th:text="${student.rollNo}">13</td>
+                                <td class="text-end">
+                                    <button class="btn btn-link text-danger p-0 border-0"
+                                            th:data-enrollment="${student.enrollmentNo}"
+                                            onclick="removePreviewRow(this.getAttribute('data-enrollment'))"
+                                            title="Remove Student">
+                                        <i class="bi bi-trash fs-5"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr id="previewEmptyRow" style="display:none;">
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                    No students in the list. Add students above.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top:1px solid var(--border-color);">
+                    <div class="text-muted" style="font-size:13px;">
+                        Total Eligible Students: <strong id="previewCount" class="text-primary-custom" th:text="${matchedStudents.size()}">0</strong>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/admin/eligible-students}" class="btn btn-outline-primary">Cancel</a>
+                        <button class="btn btn-primary px-4" onclick="submitFinalList()">
+                            <i class="bi bi-check-circle-fill me-2"></i>Confirm &amp; Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Failed Import Report Table -->
+            <div class="card p-4 mt-4" th:if="${invalidRecords != null and !invalidRecords.isEmpty()}">
+                <div class="section-title mb-3"><i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>Failed Import Report</div>
+                <div class="alert alert-danger py-2 mb-3" style="font-size:13px;">
+                    These student enrollment numbers were not found in the main database. They will <strong>not</strong> be imported.
+                </div>
+                <div class="table-responsive" style="max-height:420px; overflow-y:auto;">
+                    <table class="table mb-0 align-middle sticky-header">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Enrollment No</th>
+                                <th>Student Name</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="failed, iterStat : ${invalidRecords}">
+                                <td class="text-muted" style="font-size:12px;" th:text="${iterStat.count}">1</td>
+                                <td class="fw-bold font-monospace text-danger" style="font-size:13px;" th:text="${failed.enrollmentNo}">240045012101</td>
+                                <td th:text="${failed.studentName}">Unknown</td>
+                                <td><span class="pill pill-danger" th:text="${failed.reason}">Student Not Found</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════
+             MAIN DASHBOARD (default view — not review mode)
+             ════════════════════════════════════════════════════ -->
+        <div th:if="${reviewMode != true}">
+
+            <!-- Exam Summary Cards -->
+            <div th:if="${!examSummaries.isEmpty()}" class="mb-4">
+                <h3 class="section-title mb-3"><i class="bi bi-grid-1x2 me-2 text-primary-custom"></i>Examination Overview</h3>
+                <div class="row g-3">
+                    <div class="col-lg-4 col-md-6" th:each="summary : ${examSummaries}">
+                        <div class="exam-summary-card card">
+                            <div class="d-flex align-items-start justify-content-between mb-3">
+                                <div style="flex:1; min-width:0;">
+                                    <div class="fw-bold text-truncate" style="font-family:'Outfit',sans-serif; font-size:16px; color:var(--text-primary);"
+                                         th:text="${examNamesMap.get(summary.examId)} ?: 'Exam #' + ${summary.examId}">Exam Name</div>
+                                    <div class="mt-1 d-flex gap-2 align-items-center flex-wrap">
+                                        <span th:class="${summary.examType == 'EXAM' ? 'pill pill-info' : 'pill pill-warning'}" style="font-size: 9px; padding: 2px 6px;" th:text="${summary.examType == 'EXAM' ? 'Exam' : 'Paper'}">EXAM</span>
+                                        <span th:if="${summary.isLocked}" class="pill pill-lock" style="font-size: 9px; padding: 2px 6px;"><i class="bi bi-lock-fill"></i> Locked</span>
+                                        <span th:unless="${summary.isLocked}" class="pill pill-success" style="font-size: 9px; padding: 2px 6px;"><i class="bi bi-unlock-fill"></i> Open</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stats row -->
+                            <div class="row g-2 mb-3 py-2 rounded-3 stats-row-container text-center">
+                                <div class="col-4">
+                                    <div style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:800; color:var(--primary);" th:text="${summary.eligibleCount}">0</div>
+                                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Eligible</div>
+                                </div>
+                                <div class="col-4 border-start border-end border-light-subtle">
+                                    <div style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:800; color:var(--success);" th:text="${summary.attemptedCount}">0</div>
+                                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Attempted</div>
+                                </div>
+                                <div class="col-4">
+                                    <div style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:800; color:var(--warning);" th:text="${summary.pendingCount}">0</div>
+                                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Pending</div>
+                                </div>
+                            </div>
+
+                            <!-- Attempt progress bar -->
+                            <div class="mini-progress mb-3" th:if="${summary.eligibleCount > 0}">
+                                <div class="mini-progress-fill"
+                                     style="background:var(--success);"
+                                     th:style="'background:linear-gradient(90deg, var(--success) 0%, #059669 100%); width:' + ${(summary.attemptedCount * 100 / summary.eligibleCount)} + '%'"></div>
+                            </div>
+                            <div class="mini-progress mb-3" th:unless="${summary.eligibleCount > 0}">
+                                <div class="mini-progress-fill" style="background:var(--success); width:0%;"></div>
+                            </div>
+
+                            <!-- Lock banner -->
+                            <div th:if="${summary.isLocked}" class="lock-banner mb-3">
+                                <div class="d-flex align-items-center gap-2" style="font-size:11px; color:var(--text-muted);">
+                                    <i class="bi bi-lock-fill text-muted"></i>
+                                    List locked (Exam already started).
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-flex gap-2 flex-wrap" th:unless="${summary.isLocked}">
+                                <button class="btn btn-sm btn-outline-primary flex-grow-1"
+                                        th:data-exam-id="${summary.examId}"
+                                        th:data-exam-type="${summary.examType}"
+                                        onclick="openExamDetail(this.getAttribute('data-exam-id'), this.getAttribute('data-exam-type'))">
+                                    <i class="bi bi-pencil-square me-1"></i>Manage Students
+                                </button>
+                                <a th:href="@{/admin/eligible-students/download/{id}(id=${summary.examId})}"
+                                   class="btn btn-sm btn-outline-primary" title="Download CSV">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap" th:if="${summary.isLocked}">
+                                <a th:href="@{/admin/eligible-students/download/{id}(id=${summary.examId})}"
+                                   class="btn btn-sm btn-outline-primary flex-grow-1">
+                                    <i class="bi bi-download me-1"></i>Download List
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty state when no eligibility lists uploaded yet -->
+            <div th:if="${examSummaries.isEmpty()}" class="card p-5 text-center mb-4">
+                <i class="bi bi-person-check display-3 text-muted mb-3"></i>
+                <h4 style="font-family:'Outfit',sans-serif; color:var(--text-primary);">No Eligibility Lists Uploaded</h4>
+                <p class="text-muted mb-4">Upload a student list for an examination to control who can attempt it.</p>
+                <div>
+                    <button class="btn btn-primary px-4" data-bs-toggle="collapse" data-bs-target="#uploadSection">
+                        <i class="bi bi-cloud-upload-fill me-2"></i>Upload First Student List
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Main table + Audit logs row ── -->
+            <div class="row g-4">
+                <!-- Eligible Student Table -->
+                <div class="col-lg-8">
+                    <div class="card p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                            <div class="section-title"><i class="bi bi-people-fill me-2 text-primary-custom"></i>All Eligible Students
+                                <span class="pill pill-info ms-2" th:text="${eligibilityList.size()} + ' total'">0 total</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="position-relative" style="width:220px;">
+                                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                                    <input type="text" class="form-control form-control-sm ps-5" id="mainSearch" placeholder="Search students..." onkeyup="filterMainList()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive" style="max-height:480px; overflow-y:auto;">
+                            <table class="table mb-0 align-middle sticky-header" id="mainTable">
+                                <thead>
+                                    <tr>
+                                        <th>Enrollment No</th>
+                                        <th>Student Name</th>
+                                        <th>Division</th>
+                                        <th>Roll No</th>
+                                        <th>Exam / Paper</th>
+                                        <th>Imported At</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="rec : ${eligibilityList}"
+                                        class="main-row"
+                                        th:data-enrollment="${rec.enrollmentNo}"
+                                        th:data-name="${rec.studentName}"
+                                        th:data-roll="${rec.rollNo}"
+                                        th:id="'rec-' + ${rec.id}">
+                                        <td class="fw-bold font-monospace" style="font-size:13px; color: var(--text-primary);" th:text="${rec.enrollmentNo}">240045012101</td>
+                                        <td>
+                                            <input type="text" class="edit-field"
+                                                   th:value="${rec.studentName}"
+                                                   th:id="'name-' + ${rec.id}"
+                                                   th:data-id="${rec.id}"
+                                                   onblur="saveEdit(this.getAttribute('data-id'))"
+                                                   title="Click to edit name">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="edit-field font-monospace text-center" style="width:50px;"
+                                                   th:value="${rec.division}"
+                                                   th:id="'div-' + ${rec.id}"
+                                                   th:data-id="${rec.id}"
+                                                   onblur="saveEdit(this.getAttribute('data-id'))"
+                                                   title="Click to edit division">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="edit-field font-monospace text-center" style="width:70px;"
+                                                   th:value="${rec.rollNo}"
+                                                   th:id="'roll-' + ${rec.id}"
+                                                   th:data-id="${rec.id}"
+                                                   onblur="saveEdit(this.getAttribute('data-id'))"
+                                                   title="Click to edit roll number">
+                                        </td>
+                                        <td>
+                                            <span class="text-truncate d-inline-block" style="max-width:160px; font-weight: 500;" th:text="${examNamesMap.get(rec.examId)} ?: '#' + ${rec.examId}">Exam Name</span>
+                                        </td>
+                                        <td style="font-size:12px; color:var(--text-muted);" th:text="${#temporals.format(rec.importedAt, 'dd MMM yyyy')}">Date</td>
+                                        <td class="text-end">
+                                            <form th:action="@{/admin/eligible-students/delete}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this student from the eligibility list?');">
+                                                <input type="hidden" name="examId" th:value="${rec.examId}">
+                                                <input type="hidden" name="enrollmentNo" th:value="${rec.enrollmentNo}">
+                                                <button type="submit" class="btn btn-link text-danger p-0 border-0 ms-2" title="Remove Student">
+                                                    <i class="bi bi-trash fs-5"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${eligibilityList.isEmpty()}">
+                                        <td colspan="7" class="text-center text-muted py-5">
+                                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                            No eligible student records found. Upload a student list to get started.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit Log Panel -->
+                <div class="col-lg-4">
+                    <div class="card p-4">
+                        <h3 class="section-title mb-4"><i class="bi bi-journal-text me-2 text-primary-custom"></i>Upload History</h3>
+                        <div th:if="${auditLogs.isEmpty()}" class="text-center text-muted py-4">
+                            <i class="bi bi-journal fs-2 d-block mb-2"></i>
+                            No upload records yet.
+                        </div>
+                        <div class="activity-timeline" th:unless="${auditLogs.isEmpty()}">
+                            <div th:each="log : ${auditLogs}" class="activity-item">
+                                <div class="activity-dot"></div>
+                                <div class="activity-content">
+                                    <div class="fw-bold text-truncate" style="font-size:13px; color:var(--text-primary);" th:text="${log.fileName}" th:title="${log.fileName}">file.csv</div>
+                                    <div style="font-size:11px; color:var(--text-muted); margin-top: 2px;">
+                                        Uploaded by <strong th:text="${log.uploadedBy}">admin</strong>
+                                    </div>
+                                    <div style="font-size:11px; color:var(--text-muted); margin-top: 2px;">
+                                        <i class="bi bi-clock me-1"></i> <span th:text="${#temporals.format(log.uploadDate, 'dd MMM yyyy, HH:mm')}">Date</span>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-2 flex-wrap">
+                                        <span class="pill pill-success" style="font-size:9px; padding: 2px 8px;"><i class="bi bi-people-fill"></i> <span th:text="${log.totalImported}">0</span> imported</span>
+                                        <span th:if="${log.lastModifiedDate != null}" class="pill pill-info" style="font-size:9px; padding: 2px 8px;">
+                                            Modified <span th:text="${#temporals.format(log.lastModifiedDate, 'dd MMM')}">Date</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- end reviewMode != true -->
+
+    </div><!-- container-fluid -->
+</main>
+
+<!-- ─── Exam Detail Modal (for Manage Students) ─── -->
+<div class="modal fade" id="examDetailModal" tabindex="-1" aria-labelledby="examDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:20px; border:1px solid var(--border-color); background:var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+            <div class="modal-header" style="border-bottom:1px solid var(--border-color);">
+                <h5 class="modal-title section-title" id="examDetailModalLabel"><i class="bi bi-people-fill me-2 text-primary-custom"></i>Manage Students</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Add Student Row -->
+                <div class="mb-4 p-3 rounded-3 border border-dashed border-primary-subtle" style="background:rgba(255,107,0,0.02);">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Enrollment No *</label>
+                            <input type="text" class="form-control form-control-sm" id="modalEnroll" placeholder="e.g. 240045012101">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Student Name</label>
+                            <input type="text" class="form-control form-control-sm" id="modalName" placeholder="e.g. Raj Patel">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Division</label>
+                            <input type="text" class="form-control form-control-sm text-center" id="modalDiv" value="A">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Roll No</label>
+                            <input type="text" class="form-control form-control-sm text-center" id="modalRoll" placeholder="e.g. 13">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-sm btn-primary w-100" onclick="addStudentToExam()"><i class="bi bi-plus me-1"></i>Add</button>
+                        </div>
+                    </div>
+                    <div id="modalAddError" class="text-danger mt-2 d-none" style="font-size:12px;"></div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div class="position-relative" style="width:220px;">
+                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input type="text" class="form-control form-control-sm ps-5" id="modalSearch" placeholder="Search students..." onkeyup="filterModalTable()">
+                    </div>
+                    <span class="pill pill-info" style="font-size:10px;">Total: <strong id="modalCount">0</strong></span>
+                </div>
+
+                <div class="table-responsive" style="max-height:350px; overflow-y:auto;">
+                    <table class="table mb-0 align-middle sticky-header" id="modalTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Enrollment No</th>
+                                <th>Student Name</th>
+                                <th>Division</th>
+                                <th>Roll No</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalTableBody">
+                            <tr id="modalEmptyRow">
+                                <td colspan="6" class="text-center text-muted py-4">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border-color);">
+                <a id="modalDownloadLink" href="#" class="btn btn-outline-primary"><i class="bi bi-download me-2"></i>Download CSV</a>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Common Scripts ─── -->
+<script>
+    function formatRollNoJs(division, rollNo) {
+        if (!division) return rollNo || '';
+        const cleanDiv = division.trim().toUpperCase();
+        if (!rollNo) return '';
+        let cleanRoll = rollNo.trim();
+        if (cleanRoll.toUpperCase().startsWith(cleanDiv)) {
+            cleanRoll = cleanRoll.substring(cleanDiv.length);
+        }
+        const digitsMatch = cleanRoll.match(/\d+/);
+        if (digitsMatch) {
+            let digits = digitsMatch[0];
+            if (digits.length === 1) {
+                digits = '0' + digits;
+            }
+            return cleanDiv + digits;
+        }
+        return cleanDiv + cleanRoll;
+    }
+</script>
+
+<!-- ─── Scripts ─── -->
+<script th:inline="javascript" th:if="${reviewMode == true}">
+    /*<![CDATA[*/
+    const TARGET_EXAM_ID   = /*[[${targetExamId}]]*/ 0;
+    const TARGET_EXAM_TYPE = /*[[${targetExamType}]]*/ 'EXAM';
+    /*]]>*/
+
+    function removePreviewRow(enrollmentNo) {
+        const row = document.getElementById('prow-' + enrollmentNo);
+        if (row) {
+            row.remove();
+            updatePreviewCount();
+        }
+    }
+
+    function updatePreviewCount() {
+        const rows = document.querySelectorAll('.preview-row');
+        const count = rows.length;
+        document.getElementById('stats-total').textContent = count;
+        document.getElementById('stats-eligible').textContent = count;
+        document.getElementById('previewCount').textContent = count;
+        const empty = document.getElementById('previewEmptyRow');
+        if (empty) empty.style.display = count === 0 ? '' : 'none';
+        // Renumber rows
+        let idx = 1;
+        rows.forEach(r => {
+            if (r.cells[0]) r.cells[0].textContent = idx++;
+        });
+    }
+
+    function filterPreviewTable() {
+        const q = document.getElementById('previewSearch').value.trim().toLowerCase();
+        document.querySelectorAll('.preview-row').forEach(row => {
+            const enroll = (row.getAttribute('data-enrollment') || '').toLowerCase();
+            const name   = (row.getAttribute('data-name') || '').toLowerCase();
+            const roll   = (row.getAttribute('data-roll') || '').toLowerCase();
+            row.style.display = (enroll.includes(q) || name.includes(q) || roll.includes(q)) ? '' : 'none';
+        });
+    }
+
+    function showManualAddForm() {
+        document.getElementById('manualAddFormWrap').classList.remove('d-none');
+    }
+    function hideManualAddForm() {
+        document.getElementById('manualAddFormWrap').classList.add('d-none');
+        document.getElementById('manualEnroll').value = '';
+        document.getElementById('manualName').value = '';
+        document.getElementById('manualDiv').value = '';
+        document.getElementById('manualRoll').value = '';
+    }
+
+    function addManualStudentPreview() {
+        const enroll = document.getElementById('manualEnroll').value.trim();
+        const name   = document.getElementById('manualName').value.trim() || 'Unknown';
+        const div    = document.getElementById('manualDiv').value.trim() || 'A';
+        const roll   = document.getElementById('manualRoll').value.trim() || '';
+        if (!enroll) { alert('Enrollment number is required.'); return; }
+        if (document.getElementById('prow-' + enroll)) {
+            alert('Student with this enrollment number is already in the list.');
+            return;
+        }
+        const formattedRoll = formatRollNoJs(div, roll);
+        const empty = document.getElementById('previewEmptyRow');
+        if (empty) empty.style.display = 'none';
+        const tbody = document.getElementById('previewTableBody');
+        const count = document.querySelectorAll('.preview-row').length + 1;
+        const tr = document.createElement('tr');
+        tr.className = 'preview-row';
+        tr.id = 'prow-' + enroll;
+        tr.setAttribute('data-enrollment', enroll);
+        tr.setAttribute('data-name', name);
+        tr.setAttribute('data-division', div);
+        tr.setAttribute('data-roll', formattedRoll);
+        tr.innerHTML = `
+            <td class="text-muted" style="font-size:12px;">${count}</td>
+            <td class="fw-bold font-monospace" style="font-size:13px;">${enroll}</td>
+            <td>${name}</td>
+            <td><span class="pill pill-info">${div}</span></td>
+            <td class="font-monospace">${formattedRoll}</td>
+            <td class="text-end">
+                <button class="btn btn-link text-danger p-0 border-0" onclick="removePreviewRow('${enroll}')">
+                    <i class="bi bi-trash fs-5"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+        updatePreviewCount();
+        hideManualAddForm();
+    }
+
+    async function submitFinalList() {
+        const rows = document.querySelectorAll('.preview-row');
+        if (rows.length === 0) {
+            alert('No students in the list. Please add at least one student.');
+            return;
+        }
+        const students = [];
+        rows.forEach(row => {
+            students.push({
+                enrollmentNo: row.getAttribute('data-enrollment') || '',
+                studentName:  row.getAttribute('data-name') || 'Unknown',
+                division:     row.getAttribute('data-division') || 'A',
+                rollNo:       row.getAttribute('data-roll') || ''
+            });
+        });
+        const payload = {
+            examId:       TARGET_EXAM_ID,
+            examType:     TARGET_EXAM_TYPE,
+            students:     students,
+            totalRecords: students.length,
+            invalidCount: 0
+        };
+        try {
+            const resp = await fetch('/admin/eligible-students/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (resp.ok) {
+                window.location.href = '/admin/eligible-students?success=' + encodeURIComponent('Eligibility list saved successfully! ' + students.length + ' students are now eligible.');
+            } else {
+                const msg = await resp.text();
+                alert('Error: ' + msg);
+            }
+        } catch (err) {
+            alert('Failed to communicate with server. Please try again.');
+        }
+    }
+    /*]]>*/
+</script>
+
+<script th:unless="${reviewMode == true}">
+    // ─── File drop zone ───
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    if (dropZone && fileInput) {
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(fileInput);
+            }
+        });
+    }
+
+    function handleFileSelect(input) {
+        const file = input.files[0];
+        const textEl = document.getElementById('dropZoneText');
+        if (file && textEl) {
+            textEl.innerHTML = `<strong style="color:var(--primary);">${file.name}</strong><br><small class="text-muted">${(file.size/1024).toFixed(1)} KB · Click to change</small>`;
+        }
+    }
+
+    // ─── Main table search ───
+    function filterMainList() {
+        const q = document.getElementById('mainSearch').value.trim().toLowerCase();
+        document.querySelectorAll('.main-row').forEach(row => {
+            const enroll = (row.getAttribute('data-enrollment') || '').toLowerCase();
+            const name   = (row.getAttribute('data-name') || '').toLowerCase();
+            const roll   = (row.getAttribute('data-roll') || '').toLowerCase();
+            row.style.display = (enroll.includes(q) || name.includes(q) || roll.includes(q)) ? '' : 'none';
+        });
+    }
+
+    // ─── Inline edit: save on blur ───
+    async function saveEdit(id) {
+        const nameVal = document.getElementById('name-' + id)?.value?.trim() || '';
+        const divVal  = document.getElementById('div-' + id)?.value?.trim() || '';
+        const rollVal = document.getElementById('roll-' + id)?.value?.trim() || '';
+        
+        const formattedRoll = formatRollNoJs(divVal, rollVal);
+        const rollInput = document.getElementById('roll-' + id);
+        if (rollInput) rollInput.value = formattedRoll;
+        
+        const row = document.getElementById('rec-' + id);
+        if (row) {
+            row.setAttribute('data-name', nameVal);
+            row.setAttribute('data-roll', formattedRoll);
+        }
+        
+        try {
+            const body = new URLSearchParams();
+            body.append('id', id);
+            body.append('studentName', nameVal);
+            body.append('division', divVal);
+            body.append('rollNo', formattedRoll);
+            const resp = await fetch('/admin/eligible-students/edit', { method: 'POST', body });
+            if (!resp.ok) {
+                const msg = await resp.text();
+                if (msg && msg !== 'updated') console.warn('Edit response:', msg);
+            }
+        } catch(e) { console.error('Edit error:', e); }
+    }
+
+    // ─── Modal: open exam detail ───
+    let currentModalExamId   = null;
+    let currentModalExamType = null;
+
+    async function openExamDetail(examId, examType) {
+        currentModalExamId   = examId;
+        currentModalExamType = examType;
+        document.getElementById('modalDownloadLink').href = '/admin/eligible-students/download/' + examId;
+        document.getElementById('modalCount').textContent = '...';
+        const tbody = document.getElementById('modalTableBody');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Loading...</td></tr>';
+
+        const modal = new bootstrap.Modal(document.getElementById('examDetailModal'));
+        modal.show();
+
+        try {
+            const resp = await fetch('/admin/eligible-students/list/' + examId);
+            if (resp.ok) {
+                const data = await resp.json();
+                renderModalTable(data);
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Failed to load students.</td></tr>';
+            }
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Error loading data.</td></tr>';
+        }
+    }
+
+    function renderModalTable(data) {
+        const tbody = document.getElementById('modalTableBody');
+        document.getElementById('modalCount').textContent = data.length;
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr id="modalEmptyRow"><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No students in this list.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map((rec, idx) => `
+            <tr class="modal-row" id="mrow-${rec.id}" data-enrollment="${rec.enrollmentNo}" data-name="${rec.studentName || ''}" data-roll="${rec.rollNo || ''}">
+                <td class="text-muted" style="font-size:12px;">${idx + 1}</td>
+                <td class="fw-bold font-monospace text-primary-custom" style="font-size:13px;">${rec.enrollmentNo}</td>
+                <td><input type="text" class="edit-field" id="mname-${rec.id}" value="${escHtml(rec.studentName)}" onblur="saveModalEdit(${rec.id})" title="Click to edit name"></td>
+                <td><input type="text" class="edit-field font-monospace text-center" id="mdiv-${rec.id}" value="${escHtml(rec.division)}" style="width:50px;" onblur="saveModalEdit(${rec.id})" title="Click to edit division"></td>
+                <td><input type="text" class="edit-field font-monospace text-center" id="mroll-${rec.id}" value="${escHtml(rec.rollNo)}" style="width:70px;" onblur="saveModalEdit(${rec.id})" title="Click to edit roll number"></td>
+                <td class="text-end">
+                    <button class="btn btn-link text-danger p-0 border-0" onclick="deleteModalStudent(${rec.id}, '${escHtml(rec.enrollmentNo)}')" title="Remove Student">
+                        <i class="bi bi-trash fs-5"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function escHtml(str) { return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function filterModalTable() {
+        const q = document.getElementById('modalSearch').value.trim().toLowerCase();
+        document.querySelectorAll('.modal-row').forEach(row => {
+            const enroll = (row.getAttribute('data-enrollment') || '').toLowerCase();
+            const name   = (row.getAttribute('data-name') || '').toLowerCase();
+            const roll   = (row.getAttribute('data-roll') || '').toLowerCase();
+            row.style.display = (enroll.includes(q) || name.includes(q) || roll.includes(q)) ? '' : 'none';
+        });
+    }
+
+    async function saveModalEdit(id) {
+        const nameVal = document.getElementById('mname-' + id)?.value?.trim() || '';
+        const divVal  = document.getElementById('mdiv-' + id)?.value?.trim() || '';
+        const rollVal = document.getElementById('mroll-' + id)?.value?.trim() || '';
+        
+        const formattedRoll = formatRollNoJs(divVal, rollVal);
+        const rollInput = document.getElementById('mroll-' + id);
+        if (rollInput) rollInput.value = formattedRoll;
+        
+        const row = document.getElementById('mrow-' + id);
+        if (row) {
+            row.setAttribute('data-name', nameVal);
+            row.setAttribute('data-roll', formattedRoll);
+        }
+        
+        const body = new URLSearchParams();
+        body.append('id', id);
+        body.append('studentName', nameVal);
+        body.append('division', divVal);
+        body.append('rollNo', formattedRoll);
+        await fetch('/admin/eligible-students/edit', { method: 'POST', body });
+    }
+
+    async function deleteModalStudent(id, enrollmentNo) {
+        if (!confirm('Remove ' + enrollmentNo + ' from the eligibility list?')) return;
+        const body = new URLSearchParams();
+        body.append('examId', currentModalExamId);
+        body.append('enrollmentNo', enrollmentNo);
+        const resp = await fetch('/admin/eligible-students/delete', { method: 'POST', body });
+        if (resp.ok || resp.redirected) {
+            const row = document.getElementById('mrow-' + id);
+            if (row) row.remove();
+            const count = document.querySelectorAll('.modal-row').length;
+            document.getElementById('modalCount').textContent = count;
+            if (count === 0) {
+                document.getElementById('modalTableBody').innerHTML = '<tr id="modalEmptyRow"><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No students in this list.</td></tr>';
+            }
+            // Renumber
+            let idx = 1;
+            document.querySelectorAll('.modal-row').forEach(r => {
+                if (r.cells[0]) r.cells[0].textContent = idx++;
+            });
+        } else {
+            alert('Failed to remove student.');
+        }
+    }
+
+    async function addStudentToExam() {
+        const enroll = document.getElementById('modalEnroll').value.trim();
+        const name   = document.getElementById('modalName').value.trim() || 'Unknown';
+        const div    = document.getElementById('modalDiv').value.trim() || 'A';
+        const roll   = document.getElementById('modalRoll').value.trim() || '';
+        const errEl  = document.getElementById('modalAddError');
+        errEl.classList.add('d-none');
+        if (!enroll) { errEl.textContent = 'Enrollment number is required.'; errEl.classList.remove('d-none'); return; }
+
+        const body = new URLSearchParams();
+        body.append('examId', currentModalExamId);
+        body.append('examType', currentModalExamType);
+        body.append('enrollmentNo', enroll);
+        body.append('studentName', name);
+        body.append('division', div);
+        body.append('rollNo', roll);
+
+        try {
+            const resp = await fetch('/admin/eligible-students/add-student', { method: 'POST', body });
+            const data = await resp.json();
+            if (!resp.ok) {
+                errEl.textContent = data.error || 'Failed to add student.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+            // Add row to modal table
+            const emptyRow = document.getElementById('modalEmptyRow');
+            if (emptyRow) emptyRow.remove();
+            const tbody = document.getElementById('modalTableBody');
+            const count = document.querySelectorAll('.modal-row').length + 1;
+            const tr = document.createElement('tr');
+            tr.className = 'modal-row';
+            tr.id = 'mrow-' + data.id;
+            tr.setAttribute('data-enrollment', data.enrollmentNo);
+            tr.setAttribute('data-name', data.studentName || '');
+            tr.setAttribute('data-roll', data.rollNo || '');
+            tr.innerHTML = `
+                <td class="text-muted" style="font-size:12px;">${count}</td>
+                <td class="fw-bold font-monospace text-primary-custom" style="font-size:13px;">${escHtml(data.enrollmentNo)}</td>
+                <td><input type="text" class="edit-field" id="mname-${data.id}" value="${escHtml(data.studentName)}" onblur="saveModalEdit(${data.id})" title="Click to edit name"></td>
+                <td><input type="text" class="edit-field font-monospace text-center" id="mdiv-${data.id}" value="${escHtml(data.division)}" style="width:50px;" onblur="saveModalEdit(${data.id})" title="Click to edit division"></td>
+                <td><input type="text" class="edit-field font-monospace text-center" id="mroll-${data.id}" value="${escHtml(data.rollNo)}" style="width:70px;" onblur="saveModalEdit(${data.id})" title="Click to edit roll number"></td>
+                <td class="text-end">
+                    <button class="btn btn-link text-danger p-0 border-0" onclick="deleteModalStudent(${data.id}, '${escHtml(data.enrollmentNo)}')" title="Remove Student">
+                        <i class="bi bi-trash fs-5"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            document.getElementById('modalCount').textContent = document.querySelectorAll('.modal-row').length;
+            document.getElementById('modalEnroll').value = '';
+            document.getElementById('modalName').value = '';
+            document.getElementById('modalDiv').value = 'A';
+            document.getElementById('modalRoll').value = '';
+        } catch(e) {
+            errEl.textContent = 'Network error. Please try again.';
+            errEl.classList.remove('d-none');
+        }
+    }
+</script>
+
+<script src="/js/canvas.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

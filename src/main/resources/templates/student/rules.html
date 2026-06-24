@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rules and Regulations - Exam Portal</title>
+    <!-- Google Fonts (Outfit & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: rgba(79, 70, 229, 0.05);
+            --accent: #7c3aed;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --warning: #d97706;
+            --warning-light: rgba(217, 119, 6, 0.04);
+            --danger: #ef4444;
+            --success: #10b981;
+            --border-color: rgba(226, 232, 240, 0.8);
+            --transition-smooth: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f9;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            margin: 0;
+        }
+
+        .rules-container {
+            max-width: 680px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            padding: 2.5rem 3rem;
+            position: relative;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .logo-container img {
+            max-height: 60px;
+            object-fit: contain;
+        }
+
+        h3.exam-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-align: center;
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .exam-meta-box {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exam-meta-info h5 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: #1e3a8a;
+            font-size: 1.05rem;
+            margin: 0 0 2px 0;
+        }
+
+        .exam-meta-info p {
+            color: #1e40af;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .exam-type-selector {
+            background: #ffffff;
+            border: 1px solid #3b82f6;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .custom-radio {
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
+            accent-color: #3b82f6;
+        }
+
+        .radio-label {
+            font-weight: 700;
+            color: #1d4ed8;
+            font-size: 0.85rem;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        h4.rules-heading {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 1.15rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h4.rules-heading i {
+            color: var(--primary);
+        }
+
+        .rules-list {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            transition: var(--transition-smooth);
+        }
+
+        .rule-item:last-child {
+            border-bottom: none;
+        }
+
+        .rule-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .rule-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .rule-circle.info { background: #e0f2fe; color: #0284c7; }
+        .rule-circle.warning { background: #fef3c7; color: #d97706; }
+        .rule-circle.danger { background: #fee2e2; color: #ef4444; }
+        .rule-circle.success { background: #dcfce7; color: #16a34a; }
+
+        .rule-details {
+            flex-grow: 1;
+        }
+
+        .rule-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 0.95rem;
+            margin: 0 0 2px 0;
+        }
+
+        .rule-desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .warning-notice-box {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: #92400e;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .warning-notice-box i {
+            font-size: 1.1rem;
+            color: #d97706;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        .terms-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .terms-checkbox-input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            margin-top: 2px;
+            accent-color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .terms-label {
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            cursor: pointer;
+            user-select: none;
+            margin: 0;
+        }
+
+        .rules-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            gap: 16px;
+        }
+
+        @media (max-width: 576px) {
+            .rules-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .exam-status-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .exam-status-box.waiting {
+            color: #d97706;
+        }
+
+        .exam-status-box.ready {
+            color: #16a34a;
+        }
+
+        .status-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .status-icon.waiting {
+            border: 2px solid rgba(217, 119, 6, 0.2);
+            border-top-color: #d97706;
+            animation: spin 1s linear infinite;
+        }
+
+        .status-icon.ready {
+            background-color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .status-icon::after {
+            content: '✓';
+            color: #ffffff;
+            font-size: 8px;
+            font-weight: 800;
+            display: inline-block;
+            line-height: 1;
+            opacity: 0;
+        }
+
+        .status-icon.ready::after {
+            opacity: 1;
+        }
+
+        .btn-start-premium {
+            background: var(--primary);
+            color: #ffffff !important;
+            padding: 0.65rem 1.75rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.15);
+            flex-shrink: 0;
+            justify-content: center;
+        }
+
+        .btn-start-premium:hover:not(.disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 10px -1px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-start-premium.disabled {
+            background: #e2e8f0 !important;
+            color: #94a3b8 !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .error-alert {
+            max-width: 680px;
+            width: 100%;
+            border-left: 4px solid var(--danger);
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            font-size: 0.85rem;
+            color: #991b1b;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .custom-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 10000;
+            background: #ffffff;
+            border-left: 4px solid var(--success);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #166534;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: 1px solid #bbf7d0;
+            animation: toastSlideIn 0.3s ease forwards;
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastSlideOut {
+            from { transform: translateX(0); opacity: 0; }
+            to { transform: translateX(120%); opacity: 0; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container d-flex flex-column align-items-center gap-4">
+    <!-- Error Alert -->
+    <div th:if="${error != null && !error.contains('terminated') && !error.contains('already')}" class="error-alert alert alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+        <div class="flex-grow-1">
+            <strong>Hold On!</strong> <span th:text="${error}"></span>
+        </div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close" style="color: #7f1d1d; filter: contrast(0.5);"></button>
+    </div>
+
+    <div class="rules-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <img th:src="@{/images/logo.png}" alt="University Logo" onerror="this.src='https://via.placeholder.com/150x50?text=University+Logo'">
+        </div>
+        
+        <h3 class="exam-title">Rules and Regulations</h3>
+
+        <!-- Exam Type & Mode Selection -->
+        <div class="exam-meta-box shadow-sm">
+            <div class="exam-meta-info">
+                <h5>Examination Mode</h5>
+                <p>Select your preferred mode of taking the exam.</p>
+            </div>
+            <div class="exam-type-selector">
+                <input class="form-check-input custom-radio m-0" type="radio" name="examType" value="online" form="rulesForm" id="typeOnline" required>
+                <label class="radio-label ms-1" for="typeOnline">Online</label>
+            </div>
+        </div>
+
+        <h4 class="rules-heading"><i class="bi bi-shield-check"></i> Examination Rules & Guidelines</h4>
+        
+        <!-- Modular Rules List -->
+        <div class="rules-list">
+            <!-- Rule 1: MCQs -->
+            <div class="rule-item">
+                <div class="rule-circle info"><i class="bi bi-list-check"></i></div>
+                <div class="rule-details">
+                    <div class="rule-title">Question Structure</div>
+                    <div class="rule-desc">The exam consists of multiple-choice questions (MCQs). Read each option carefully before choosing your final answer.</div>
+                </div>
+            </div>
+            
+            <!-- Rule 2: Internet Connection -->
+            <div class="rule-item">
+                <div class="rule-circle info"><i class="bi bi-wifi"></i></div>
+                <div class="rule-details">
+                    <div class="rule-title">Connectivity Check</div>
+                    <div class="rule-desc">Ensure you have a reliable, high-speed internet connection active on your computer before beginning the examination.</div>
+                </div>
+            </div>
+            
+            <!-- Rule 3: Browser Reload Lock -->
+            <div class="rule-item">
+                <div class="rule-circle warning"><i class="bi bi-arrow-clockwise"></i></div>
+                <div class="rule-details">
+                    <div class="rule-title">Reloading Prevention</div>
+                    <div class="rule-desc">Do NOT refresh the page, hit F5, or click the browser's back button. Doing so may invalidate your active state.</div>
+                </div>
+            </div>
+            
+            <!-- Rule 4: Tab Switching Block -->
+            <div class="rule-item">
+                <div class="rule-circle danger"><i class="bi bi-window-dash"></i></div>
+                <div class="rule-details">
+                    <div class="rule-title">Security Enforcement</div>
+                    <div class="rule-desc">Switching tabs, changing app focus, or opening extra applications is tracked and may automatically terminate your exam session.</div>
+                </div>
+            </div>
+
+            <!-- Rule 5: Timer & Auto-Submit -->
+            <div class="rule-item">
+                <div class="rule-circle warning"><i class="bi bi-clock-history"></i></div>
+                <div class="rule-details">
+                    <div class="rule-title">Countdown & Auto-Submit</div>
+                    <div class="rule-desc">This exam has a strict time limit. A live timer is displayed on the screen. The test will auto-submit immediately when time expires.</div>
+                </div>
+            </div>
+
+            <!-- Rule 6: Proctoring -->
+            <div class="rule-item">
+                <div class="rule-circle danger"><i class="bi bi-eye"></i></div>
+                <div class="rule-details">
+                    <div class="rule-title">Behavioral Analysis</div>
+                    <div class="rule-desc">Any suspicious behavior, movement, or malpractices detected by the proctoring engine will be flagged and logged automatically.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form for rules validation -->
+        <form id="rulesForm">
+            <!-- Terms and Conditions -->
+            <div class="terms-box">
+                <div class="d-flex align-items-start gap-3">
+                    <input class="form-check-input terms-checkbox-input" type="checkbox" id="termsCheckbox" required>
+                    <label class="terms-label" for="termsCheckbox">
+                        I have read and fully understood all rules, guidelines, and malpractice consequences. I agree to comply with them.
+                    </label>
+                </div>
+            </div>
+
+            <!-- Rules Footer containing Status and Action Button -->
+            <div class="rules-footer">
+                <div id="waitingMessage" class="exam-status-box waiting" style="display: flex;">
+                    <span id="statusIcon" class="status-icon waiting"></span>
+                    <span id="statusMessageText">Waiting for admin to upload the exam paper...</span>
+                </div>
+                <a th:href="${exam != null && exam.id != 0 ? '/student/exam/start/' + exam.id : '/student/rules/start'}" id="startExamBtn" class="btn btn-start-premium disabled" style="pointer-events: none;">
+                    START EXAM <i class="bi bi-play-circle-fill"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Live Toast Notification Container -->
+<div id="liveToast" class="toast shadow-lg border-0" role="alert" aria-live="assertive" aria-atomic="true" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: none; min-width: 320px; border-radius: 12px; background: #ffffff; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;">
+    <div style="height: 4px; background: linear-gradient(90deg, #6f42c1, #0d6efd);"></div>
+    <div class="toast-body p-3">
+        <div class="d-flex align-items-start gap-3">
+            <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-circle" style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background-color: rgba(13, 110, 253, 0.1);">
+                <i class="bi bi-megaphone-fill fs-5" style="color: #0d6efd;"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem; display: flex; align-items: center; gap: 6px;"><i class="fas fa-bullhorn text-primary"></i> Exam Available</h6>
+                <p class="text-secondary mb-0 small" style="line-height: 1.4;">Your examination is now ready.<br><span class="fw-bold text-primary">You can now start your exam.</span></p>
+            </div>
+            <button type="button" class="btn-close ms-auto small" onclick="closeToast()"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes slideIn {
+    0% { transform: translateX(120%) scale(0.9); opacity: 0; }
+    100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes slideOut {
+    0% { transform: translateX(0) scale(1); opacity: 1; }
+    100% { transform: translateX(120%) scale(0.9); opacity: 0; }
+}
+</style>
+
+<!-- Hidden markers for polling script -->
+<input type="hidden" id="paperId" th:value="${exam != null ? exam.id : 0}">
+<input type="hidden" id="examTypeCheck" value="exam">
+
+<script>
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    const startExamBtn = document.getElementById('startExamBtn');
+    const radioButtons = document.querySelectorAll('input[name="examType"]');
+    
+    let isExamActive = false;
+    let notificationShown = false;
+
+    const paperId = document.getElementById('paperId').value;
+    const examTypeCheck = document.getElementById('examTypeCheck').value;
+
+    function closeToast() {
+        const toast = document.getElementById('liveToast');
+        if (toast) {
+            toast.style.animation = 'slideOut 0.4s ease forwards';
+            setTimeout(() => { toast.style.display = 'none'; }, 400);
+        }
+    }
+
+    function checkConditions() {
+        if (isExamActive) {
+            startExamBtn.classList.remove('disabled');
+            startExamBtn.style.pointerEvents = 'auto';
+        } else {
+            startExamBtn.classList.add('disabled');
+            startExamBtn.style.pointerEvents = 'none';
+        }
+    }
+
+    function showToastNotification(message) {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = 'custom-toast';
+        toast.innerHTML = `
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+        
+        // Auto-remove toast after 3 seconds
+        setTimeout(() => {
+            toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
+
+    // Intercept click on Start Button to show toast first
+    startExamBtn.addEventListener('click', function(e) {
+        if (startExamBtn.classList.contains('disabled')) {
+            e.preventDefault();
+            return;
+        }
+        
+        e.preventDefault(); // Prevent immediate navigation
+        
+        showToastNotification("Now you can start the exam");
+        
+        setTimeout(() => {
+            window.location.href = startExamBtn.getAttribute('href');
+        }, 1500);
+    });
+
+    async function checkExamStatus() {
+        const waitingMsg = document.getElementById('waitingMessage');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusText = document.getElementById('statusMessageText');
+
+        // If fallback rules page with ID 0, poll /student/rules to check for new exam/paper
+        if (paperId === "0") {
+            isExamActive = false;
+            if (waitingMsg) {
+                waitingMsg.className = "exam-status-box waiting shadow-sm";
+            }
+            if (statusIcon) {
+                statusIcon.className = "status-icon waiting";
+            }
+            if (statusText) {
+                statusText.textContent = "Waiting for admin to upload the exam paper...";
+            }
+            checkConditions();
+
+            try {
+                const response = await fetch('/student/rules');
+                if (response.ok && response.redirected) {
+                    window.location.href = response.url;
+                }
+            } catch (err) {
+                console.error("Error polling fallback rules status:", err);
+            }
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/exam/${paperId}/status?type=${examTypeCheck}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status === "ACTIVE") {
+                    isExamActive = true;
+                    
+                    if (waitingMsg) {
+                        waitingMsg.className = "exam-status-box ready shadow-sm";
+                    }
+                    if (statusIcon) {
+                        statusIcon.className = "status-icon ready";
+                    }
+                    if (statusText) {
+                        statusText.textContent = "Exam is now available";
+                    }
+                    
+                    // Auto-select Online mode for visual completeness
+                    const onlineRadio = document.getElementById('typeOnline');
+                    if (onlineRadio) {
+                        onlineRadio.checked = true;
+                    }
+                    
+                    checkConditions();
+
+                    if (!notificationShown) {
+                        const toast = document.getElementById('liveToast');
+                        if (toast) {
+                            toast.style.display = 'block';
+                            toast.style.animation = 'slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                            notificationShown = true;
+                            setTimeout(closeToast, 8000);
+                        }
+                    }
+                } else if (data.status === "ENDED") {
+                    window.location.href = "/student/rules";
+                } else {
+                    isExamActive = false;
+                    
+                    if (waitingMsg) {
+                        waitingMsg.className = "exam-status-box waiting shadow-sm";
+                    }
+                    if (statusIcon) {
+                        statusIcon.className = "status-icon waiting";
+                    }
+                    if (statusText) {
+                        statusText.textContent = "Waiting for admin to upload the exam paper...";
+                    }
+                    
+                    checkConditions();
+                }
+            }
+        } catch (error) {
+            console.error("Error checking exam status:", error);
+        }
+    }
+
+    termsCheckbox.addEventListener('change', checkConditions);
+    radioButtons.forEach(radio => radio.addEventListener('change', checkConditions));
+
+    // Initial check and periodic polling
+    checkExamStatus();
+    setInterval(checkExamStatus, 5000);
+</script>
+
+    <!-- Global Theme Engine -->
+    <script src="/js/canvas.js"></script>
+</body>
+</html>
