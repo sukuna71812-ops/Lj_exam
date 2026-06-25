@@ -174,4 +174,26 @@ class ExamApplicationTests {
 			else System.clearProperty("spring.datasource.password");
 		}
 	}
+
+	@Test
+	void testDatabaseConnectionCredentials() {
+		System.setProperty("user.timezone", "UTC");
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
+
+		String[] passwords = {"giKjeZcpRiVmKnmIVfDNmXcbwLXgcLha", "ikwkZtBXVcbrqVFNsJZkXDXEDXyuZYRx"};
+		for (String password : passwords) {
+			try {
+				Class.forName("org.postgresql.Driver");
+				java.sql.Connection conn = java.sql.DriverManager.getConnection(
+					"jdbc:postgresql://reseau.proxy.rlwy.net:38294/railway", "postgres", password
+				);
+				System.out.println("Connection SUCCESS with password: " + password);
+				conn.close();
+				return;
+			} catch (Exception e) {
+				System.out.println("Connection FAILED with password: " + password + " - " + e.getMessage());
+			}
+		}
+		fail("Failed to connect to Railway PostgreSQL with all passwords");
+	}
 }
