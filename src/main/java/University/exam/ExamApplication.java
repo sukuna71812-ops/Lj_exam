@@ -6,7 +6,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ExamApplication {
 
+	@jakarta.annotation.PostConstruct
+	public void init() {
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
+	}
+
 	public static void main(String[] args) {
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
 		String databaseUrl = System.getenv("DATABASE_URL");
 		configureDatabaseConnection(databaseUrl);
 		SpringApplication.run(ExamApplication.class, args);
@@ -74,4 +80,4 @@ public class ExamApplication {
 		}
 	}
   
-}                                                                                                      
+}                                                                                                         

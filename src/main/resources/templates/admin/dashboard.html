@@ -927,7 +927,11 @@
                     return;
                 }
 
-                const startTime = new Date(activationTimeStr).getTime();
+                let cleanTimeStr = activationTimeStr.replace(' ', 'T');
+                if (!cleanTimeStr.includes('Z') && !cleanTimeStr.includes('+') && !cleanTimeStr.includes('-')) {
+                    cleanTimeStr += 'Z';
+                }
+                const startTime = new Date(cleanTimeStr).getTime();
                 const durationMs = durationMinutes * 60 * 1000;
                 const endTime = startTime + durationMs;
 
