@@ -103,4 +103,48 @@ class ExamApplicationTests {
 			}
 		}
 	}
+
+	@Test
+	void testConfigureDatabaseConnection() {
+		// Save existing properties to restore later
+		String origUrl = System.getProperty("spring.datasource.url");
+		String origUser = System.getProperty("spring.datasource.username");
+		String origPass = System.getProperty("spring.datasource.password");
+
+		try {
+			// Clear them first
+			System.clearProperty("spring.datasource.url");
+			System.clearProperty("spring.datasource.username");
+			System.clearProperty("spring.datasource.password");
+
+			// Test 1: null url
+			ExamApplication.configureDatabaseConnection(null);
+			assertNull(System.getProperty("spring.datasource.url"));
+
+			// Test 2: standard database url
+			String dbUrl = "postgresql://postgres:ikwkZtBXVcbrqVFNsJZkXDXEDXyuZYRx@postgres.railway.internal:5432/railway";
+			ExamApplication.configureDatabaseConnection(dbUrl);
+			assertEquals("jdbc:postgresql://postgres.railway.internal:5432/railway", System.getProperty("spring.datasource.url"));
+			assertEquals("postgres", System.getProperty("spring.datasource.username"));
+			assertEquals("ikwkZtBXVcbrqVFNsJZkXDXEDXyuZYRx", System.getProperty("spring.datasource.password"));
+
+			// Test 3: postgres prefix and query parameters
+			String dbUrlWithParams = "postgres://custom_user:custom_pass@custom-host.com:9999/custom_db?sslmode=require&binaryTransfer=true";
+			ExamApplication.configureDatabaseConnection(dbUrlWithParams);
+			assertEquals("jdbc:postgresql://custom-host.com:9999/custom_db?sslmode=require&binaryTransfer=true", System.getProperty("spring.datasource.url"));
+			assertEquals("custom_user", System.getProperty("spring.datasource.username"));
+			assertEquals("custom_pass", System.getProperty("spring.datasource.password"));
+
+		} finally {
+			// Restore original system properties
+			if (origUrl != null) System.setProperty("spring.datasource.url", origUrl);
+			else System.clearProperty("spring.datasource.url");
+
+			if (origUser != null) System.setProperty("spring.datasource.username", origUser);
+			else System.clearProperty("spring.datasource.username");
+
+			if (origPass != null) System.setProperty("spring.datasource.password", origPass);
+			else System.clearProperty("spring.datasource.password");
+		}
+	}
 }
