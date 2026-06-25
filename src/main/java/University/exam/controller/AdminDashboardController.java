@@ -23,6 +23,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +41,21 @@ import java.util.*;
 @Controller
 @RequestMapping("/admin")
 public class AdminDashboardController {
+
+    @Value("${app.upload.dir:}")
+    private String configuredUploadDir;
+
+    private String resolveUploadDir() {
+        if (configuredUploadDir != null && !configuredUploadDir.trim().isEmpty()) {
+            return configuredUploadDir;
+        }
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            return "C:/uploads/";
+        } else {
+            return "/tmp/uploads/";
+        }
+    }
 
     @Autowired
     private PaperRepository paperRepository;
@@ -670,8 +689,9 @@ public class AdminDashboardController {
 
             if (!isManual) {
                 // Save the file locally to an external directory
-                String uploadDir = "C:/uploads/";
-                File dir = new File(uploadDir);
+                String uploadDir = resolveUploadDir();
+                Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+                File dir = uploadPath.toFile();
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
@@ -683,9 +703,8 @@ public class AdminDashboardController {
                 }
                 
                 String safeFilename = UUID.randomUUID().toString() + originalExtension;
-                String filePath = uploadDir + safeFilename;
-                
-                File destFile = new File(filePath);
+                Path destFilePath = uploadPath.resolve(safeFilename);
+                File destFile = destFilePath.toFile();
                 file.transferTo(destFile);
 
                 paper.setFilePath("/uploads/" + safeFilename);

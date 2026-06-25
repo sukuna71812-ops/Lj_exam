@@ -11,22 +11,42 @@ class ExamApplicationTests {
 
 	private final PaperParsingService parser = new PaperParsingService();
 
+	private java.io.File resolveUploadDir() {
+		String uploadDir = System.getenv("UPLOAD_DIR");
+		if (uploadDir == null || uploadDir.trim().isEmpty()) {
+			uploadDir = System.getProperty("app.upload.dir");
+		}
+		if (uploadDir == null || uploadDir.trim().isEmpty()) {
+			String os = System.getProperty("os.name").toLowerCase();
+			if (os.contains("win")) {
+				uploadDir = "C:/uploads/";
+			} else {
+				uploadDir = "/tmp/uploads/";
+			}
+		}
+		return new java.io.File(uploadDir);
+	}
+
 	@Test
 	void contextLoads() {
 	}
 
 	@Test
 	void printPdfText() throws Exception {
-		java.io.File file = new java.io.File("C:/uploads/9c37b7fd-a3ee-4236-99de-da4565686c0c.pdf");
-		if (file.exists()) {
-			System.out.println("--- PDF TEXT CONTENT ---");
-			System.out.println(parser.parsePaper(file, new Paper()).size() + " questions parsed");
-			String rawText = "";
-			try (org.apache.pdfbox.pdmodel.PDDocument doc = org.apache.pdfbox.pdmodel.PDDocument.load(file)) {
-				rawText = new org.apache.pdfbox.text.PDFTextStripper().getText(doc);
+		java.io.File uploadsDir = resolveUploadDir();
+		if (uploadsDir.exists() && uploadsDir.isDirectory()) {
+			java.io.File[] files = uploadsDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".pdf"));
+			if (files != null && files.length > 0) {
+				java.io.File file = files[0];
+				System.out.println("--- PDF TEXT CONTENT ---");
+				System.out.println(parser.parsePaper(file, new Paper()).size() + " questions parsed");
+				String rawText = "";
+				try (org.apache.pdfbox.pdmodel.PDDocument doc = org.apache.pdfbox.pdmodel.PDDocument.load(file)) {
+					rawText = new org.apache.pdfbox.text.PDFTextStripper().getText(doc);
+				}
+				System.out.println(rawText);
+				System.out.println("------------------------");
 			}
-			System.out.println(rawText);
-			System.out.println("------------------------");
 		}
 	}
 
@@ -82,7 +102,7 @@ class ExamApplicationTests {
 
 	@Test
 	void testParseRealPdfs() throws Exception {
-		java.io.File uploadsDir = new java.io.File("C:/uploads");
+		java.io.File uploadsDir = resolveUploadDir();
 		if (!uploadsDir.exists() || !uploadsDir.isDirectory()) {
 			return;
 		}
