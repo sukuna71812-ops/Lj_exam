@@ -128,6 +128,13 @@ class ExamApplicationTests {
 			assertEquals("postgres", System.getProperty("spring.datasource.username"));
 			assertEquals("ikwkZtBXVcbrqVFNsJZkXDXEDXyuZYRx", System.getProperty("spring.datasource.password"));
 
+			// Test User URL
+			String userUrl = "postgresql://postgres:giKjeZcpRiVmKnmIVfDNmXcbwLXgcLha@postgres.railway.internal:5432/railway";
+			ExamApplication.configureDatabaseConnection(userUrl);
+			assertEquals("jdbc:postgresql://postgres.railway.internal:5432/railway", System.getProperty("spring.datasource.url"));
+			assertEquals("postgres", System.getProperty("spring.datasource.username"));
+			assertEquals("giKjeZcpRiVmKnmIVfDNmXcbwLXgcLha", System.getProperty("spring.datasource.password"));
+
 			// Test 3: postgres prefix and query parameters
 			String dbUrlWithParams = "postgres://custom_user:custom_pass@custom-host.com:9999/custom_db?sslmode=require&binaryTransfer=true";
 			ExamApplication.configureDatabaseConnection(dbUrlWithParams);
