@@ -41,6 +41,11 @@ public class ExamApplication {
 				String dbUrl = "jdbc:postgresql://" + host + ":" + portStr + path;
 				if (query != null && !query.trim().isEmpty()) {
 					dbUrl += "?" + query;
+					if (!query.contains("timezone")) {
+						dbUrl += "&options=-c%20timezone=UTC";
+					}
+				} else {
+					dbUrl += "?options=-c%20timezone=UTC";
 				}
 				
 				System.setProperty("spring.datasource.url", dbUrl);
@@ -65,7 +70,7 @@ public class ExamApplication {
 		if (pgHost != null && !pgHost.trim().isEmpty() && pgUser != null && !pgUser.trim().isEmpty()) {
 			String port = (pgPort == null || pgPort.trim().isEmpty()) ? "5432" : pgPort;
 			String database = (pgDatabase == null || pgDatabase.trim().isEmpty()) ? "postgres" : pgDatabase;
-			String dbUrl = "jdbc:postgresql://" + pgHost + ":" + port + "/" + database;
+			String dbUrl = "jdbc:postgresql://" + pgHost + ":" + port + "/" + database + "?options=-c%20timezone=UTC";
 
 			System.setProperty("spring.datasource.url", dbUrl);
 			System.setProperty("spring.datasource.username", pgUser);

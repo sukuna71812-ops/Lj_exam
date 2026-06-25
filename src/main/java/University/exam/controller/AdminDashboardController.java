@@ -129,6 +129,11 @@ public class AdminDashboardController {
             if ("ACTIVE".equals(paper.getExamStatus()) && paper.getActivationTime() != null && paper.getExamDuration() != null) {
                 LocalDateTime endTime = paper.getActivationTime().plusMinutes(paper.getExamDuration());
                 if (now.isAfter(endTime)) {
+                    System.out.println("[Timezone Debug] Auto-terminating Paper ID " + paper.getId() + 
+                        " | ActivationTime (from DB): " + paper.getActivationTime() + 
+                        " | Duration: " + paper.getExamDuration() + "m" +
+                        " | EndTime: " + endTime + 
+                        " | CurrentTime (JVM): " + now);
                     paper.setExamStatus("ENDED");
                     paperRepository.save(paper);
                     paperChanged = true;

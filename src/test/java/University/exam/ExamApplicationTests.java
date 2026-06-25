@@ -144,21 +144,21 @@ class ExamApplicationTests {
 			// Test 2: standard database url
 			String dbUrl = "postgresql://postgres:ikwkZtBXVcbrqVFNsJZkXDXEDXyuZYRx@postgres.railway.internal:5432/railway";
 			ExamApplication.configureDatabaseConnection(dbUrl);
-			assertEquals("jdbc:postgresql://postgres.railway.internal:5432/railway", System.getProperty("spring.datasource.url"));
+			assertEquals("jdbc:postgresql://postgres.railway.internal:5432/railway?options=-c%20timezone=UTC", System.getProperty("spring.datasource.url"));
 			assertEquals("postgres", System.getProperty("spring.datasource.username"));
 			assertEquals("ikwkZtBXVcbrqVFNsJZkXDXEDXyuZYRx", System.getProperty("spring.datasource.password"));
 
 			// Test User URL
 			String userUrl = "postgresql://postgres:giKjeZcpRiVmKnmIVfDNmXcbwLXgcLha@postgres.railway.internal:5432/railway";
 			ExamApplication.configureDatabaseConnection(userUrl);
-			assertEquals("jdbc:postgresql://postgres.railway.internal:5432/railway", System.getProperty("spring.datasource.url"));
+			assertEquals("jdbc:postgresql://postgres.railway.internal:5432/railway?options=-c%20timezone=UTC", System.getProperty("spring.datasource.url"));
 			assertEquals("postgres", System.getProperty("spring.datasource.username"));
 			assertEquals("giKjeZcpRiVmKnmIVfDNmXcbwLXgcLha", System.getProperty("spring.datasource.password"));
 
 			// Test 3: postgres prefix and query parameters
 			String dbUrlWithParams = "postgres://custom_user:custom_pass@custom-host.com:9999/custom_db?sslmode=require&binaryTransfer=true";
 			ExamApplication.configureDatabaseConnection(dbUrlWithParams);
-			assertEquals("jdbc:postgresql://custom-host.com:9999/custom_db?sslmode=require&binaryTransfer=true", System.getProperty("spring.datasource.url"));
+			assertEquals("jdbc:postgresql://custom-host.com:9999/custom_db?sslmode=require&binaryTransfer=true&options=-c%20timezone=UTC", System.getProperty("spring.datasource.url"));
 			assertEquals("custom_user", System.getProperty("spring.datasource.username"));
 			assertEquals("custom_pass", System.getProperty("spring.datasource.password"));
 
