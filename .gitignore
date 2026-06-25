@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Agent Configurations & Cache ###
+.agent/
+.agents/
+.gemini/
+*.log
