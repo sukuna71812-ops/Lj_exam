@@ -14,7 +14,7 @@
             --primary-gradient: linear-gradient(135deg, #ff8a3d 0%, #ff6b00 100%);
             --sidebar-width: 260px;
             --bg-canvas: #f8fafc;
-            --card-bg: rgba(255,255,255,0.9);
+            --card-bg: rgba(255,255,255,0.85);
             --border-color: rgba(0,0,0,0.06);
             --text-primary: #0f172a;
             --text-secondary: #475569;
@@ -23,9 +23,8 @@
             --warning: #f59e0b;
             --danger: #ef4444;
             --info: #3b82f6;
-            --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.04);
-            --card-shadow-hover: 0 16px 36px -12px rgba(255,107,0,0.08);
-            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --card-shadow: 0 4px 20px -4px rgba(0,0,0,0.04);
+            --transition: all 0.25s ease;
         }
         body.dark-theme {
             --bg-canvas: #090d16;
@@ -34,48 +33,45 @@
             --text-primary: #f9fafb;
             --text-secondary: #cbd5e1;
             --text-muted: #94a3b8;
-            --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-            --card-shadow-hover: 0 16px 36px -12px rgba(255,107,0,0.15);
         }
         body { background-color: var(--bg-canvas); color: var(--text-secondary); font-family:'Inter',sans-serif; font-size:14px; min-height:100vh; transition: var(--transition); }
         .main-content { margin-left: var(--sidebar-width); padding: 2.5rem; transition: var(--transition); }
         @media(max-width:991.98px){ .main-content { margin-left:0; padding:1.25rem; } }
 
         /* Cards */
-        .card { background: var(--card-bg); border:1px solid var(--border-color) !important; border-radius:18px !important; box-shadow: var(--card-shadow) !important; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); transition:var(--transition); position: relative; overflow: hidden; }
-        .card:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-hover) !important; }
+        .card { background: var(--card-bg); border:1px solid var(--border-color) !important; border-radius:20px !important; box-shadow: var(--card-shadow) !important; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); transition:var(--transition); }
+        .card:hover { box-shadow: 0 10px 30px -6px rgba(0,0,0,0.08) !important; }
 
         /* Stat cards */
         .stat-card { border-radius:16px !important; padding: 1.25rem 1.5rem; display:flex; align-items:center; gap:1rem; }
-        .stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0; }
+        .stat-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
         .stat-value { font-family:'Outfit',sans-serif; font-size:1.75rem; font-weight:800; color:var(--text-primary); line-height:1; }
         .stat-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-muted); margin-top:2px; }
 
         /* Exam summary card */
-        .exam-summary-card { border-radius:18px !important; padding:1.5rem; border:1px solid var(--border-color) !important; background:var(--card-bg); transition:var(--transition); }
-        .exam-summary-card:hover { transform:translateY(-4px); box-shadow: var(--card-shadow-hover) !important; }
+        .exam-summary-card { border-radius:16px !important; padding:1.5rem; border:1px solid var(--border-color) !important; background:var(--card-bg); transition:var(--transition); }
+        .exam-summary-card:hover { transform:translateY(-2px); box-shadow:0 12px 30px -8px rgba(0,0,0,0.08) !important; }
 
         /* Table */
-        .table-responsive { background:var(--card-bg); border-radius:16px; border:1px solid var(--border-color); box-shadow:var(--card-shadow); backdrop-filter:blur(16px); }
-        .table thead th { font-family:'Outfit',sans-serif; font-weight:700 !important; font-size:11px !important; text-transform:uppercase !important; letter-spacing:0.5px !important; padding:1.1rem 1.25rem !important; color:var(--text-primary) !important; background-color: rgba(0, 0, 0, 0.02) !important; border-bottom:1px solid var(--border-color); }
-        body.dark-theme .table thead th { background-color: rgba(255, 255, 255, 0.02) !important; }
+        .table-responsive { background:var(--card-bg); border-radius:16px; border:1px solid var(--border-color); box-shadow:var(--card-shadow); backdrop-filter:blur(12px); }
+        .table thead th { font-family:'Outfit',sans-serif; font-weight:700 !important; font-size:11px !important; text-transform:uppercase !important; letter-spacing:0.5px !important; padding:1rem 1.25rem !important; color:var(--text-primary) !important; background-color:var(--bg-canvas) !important; border-bottom:1px solid var(--border-color); }
         .table tbody tr { border-bottom:1px solid var(--border-color); transition:var(--transition); }
-        .table tbody tr:hover { background-color:rgba(255,107,0,0.03) !important; }
-        .table tbody td { padding:1rem 1.25rem !important; vertical-align:middle; color: var(--text-secondary); }
+        .table tbody tr:hover { background-color:rgba(255,107,0,0.02) !important; }
+        .table tbody td { padding:0.9rem 1.25rem !important; vertical-align:middle; }
 
         /* Form controls */
-        .form-control, .form-select { background-color:var(--card-bg) !important; color:var(--text-primary) !important; border-radius:12px; border:1.5px solid var(--border-color); font-weight:500; padding: 0.6rem 1rem; transition:var(--transition); }
-        .form-control:focus, .form-select:focus { border-color:var(--primary) !important; box-shadow:0 0 0 4px rgba(255,107,0,0.12) !important; outline: none; }
+        .form-control, .form-select { background-color:var(--card-bg) !important; color:var(--text-primary) !important; border-radius:12px; border:1.5px solid var(--border-color); font-weight:500; transition:var(--transition); }
+        .form-control:focus, .form-select:focus { border-color:var(--primary) !important; box-shadow:0 0 0 4px rgba(255,107,0,0.12) !important; }
 
         /* Buttons */
-        .btn { font-family:'Outfit',sans-serif; font-weight:600; border-radius:12px; padding: 0.6rem 1.25rem; font-size:13px; transition:var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .btn-primary { background:var(--primary-gradient); border:none; color:white; box-shadow:0 4px 14px rgba(255,107,0,0.25); }
-        .btn-primary:hover { transform:translateY(-1.5px); box-shadow:0 6px 22px rgba(255,107,0,0.35); color:white; }
+        .btn { font-family:'Outfit',sans-serif; font-weight:600; border-radius:12px; font-size:13px; transition:var(--transition); }
+        .btn-primary { background:var(--primary-gradient); border:none; color:white; box-shadow:0 4px 12px rgba(255,107,0,0.2); }
+        .btn-primary:hover { transform:translateY(-1.5px); box-shadow:0 6px 20px rgba(255,107,0,0.3); color:white; }
         .btn-outline-primary { color:var(--primary); border:2px solid rgba(255,107,0,0.15); background:transparent; }
         .btn-outline-primary:hover { background:var(--primary); border-color:var(--primary); color:white; transform:translateY(-1.5px); }
 
         /* Pills */
-        .pill { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:4px 10px; border-radius:30px; text-transform:uppercase; letter-spacing:0.5px; }
+        .pill { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:4px 10px; border-radius:30px; text-transform:uppercase; letter-spacing:0.4px; }
         .pill-success { background:rgba(16,185,129,0.1); color:#10b981; }
         .pill-warning { background:rgba(245,158,11,0.1); color:#f59e0b; }
         .pill-danger  { background:rgba(239,68,68,0.1);  color:#ef4444; }
@@ -87,26 +83,23 @@
         .section-subtitle { font-size:12px; color:var(--text-muted); }
 
         /* Upload drop zone */
-        .drop-zone { border:2px dashed rgba(255,107,0,0.25); border-radius:16px; padding:2.5rem 2rem; text-align:center; cursor:pointer; transition:var(--transition); background:rgba(255,107,0,0.01); position: relative; }
-        .drop-zone:hover, .drop-zone.dragover { border-color:var(--primary); background:rgba(255,107,0,0.03); transform: scale(1.01); }
-        .drop-zone i { font-size:2.8rem; color:rgba(255,107,0,0.4); transition: var(--transition); }
-        .drop-zone:hover i { color: var(--primary); transform: translateY(-3px); }
+        .drop-zone { border:2px dashed rgba(255,107,0,0.3); border-radius:16px; padding:2rem; text-align:center; cursor:pointer; transition:var(--transition); background:rgba(255,107,0,0.02); }
+        .drop-zone:hover, .drop-zone.dragover { border-color:var(--primary); background:rgba(255,107,0,0.05); }
+        .drop-zone i { font-size:2.5rem; color:rgba(255,107,0,0.5); }
 
         /* Lock banner */
-        .lock-banner { background:linear-gradient(135deg,rgba(100,116,139,0.08),rgba(100,116,139,0.04)); border:1.5px solid rgba(100,116,139,0.15); border-radius:14px; padding:1rem 1.25rem; }
+        .lock-banner { background:linear-gradient(135deg,rgba(100,116,139,0.08),rgba(100,116,139,0.04)); border:1.5px solid rgba(100,116,139,0.2); border-radius:14px; padding:1rem 1.25rem; }
 
         /* Progress bar micro */
-        .mini-progress { height:6px; border-radius:10px; background:rgba(0,0,0,0.06); overflow:hidden; position: relative; }
-        body.dark-theme .mini-progress { background: rgba(255,255,255,0.06); }
-        .mini-progress-fill { height:100%; border-radius:10px; transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .mini-progress { height:6px; border-radius:10px; background:rgba(0,0,0,0.06); overflow:hidden; }
+        .mini-progress-fill { height:100%; border-radius:10px; transition:width 0.6s ease; }
 
         /* Inline edit */
-        .edit-field { border: 1.5px solid transparent; background: transparent; padding: 4px 8px; border-radius: 8px; font-size:inherit; font-weight:inherit; color:var(--text-primary); cursor:text; transition:var(--transition); width:100%; }
-        .edit-field:hover { background: rgba(255,107,0,0.03); border-color: rgba(255,107,0,0.15); }
-        .edit-field:focus { outline:none; background: var(--bg-canvas); border-color:var(--primary); box-shadow: 0 0 0 3px rgba(255,107,0,0.1); }
+        .edit-field { border:none; background:transparent; padding:0; font-size:inherit; font-weight:inherit; color:inherit; cursor:text; border-bottom:2px solid transparent; transition:var(--transition); width:100%; }
+        .edit-field:focus { outline:none; border-bottom-color:var(--primary); }
 
         /* Page header gradient accent */
-        .page-header-accent { border-left:4px solid var(--primary); padding-left:1.25rem; }
+        .page-header-accent { border-left:4px solid var(--primary); padding-left:1rem; }
 
         .text-primary-custom { color: var(--primary) !important; }
 
@@ -114,56 +107,15 @@
         .breadcrumb-item a { color:var(--primary); text-decoration:none; }
         .breadcrumb-item.active { color:var(--text-muted); }
 
-        /* Modern timeline feed for Upload History */
-        .activity-timeline { position: relative; padding-left: 20px; }
-        .activity-timeline::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: var(--border-color); }
-        .activity-item { position: relative; padding-bottom: 1.5rem; }
-        .activity-item:last-child { padding-bottom: 0; }
-        .activity-dot { position: absolute; left: -20px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg-canvas); border: 3px solid var(--primary); z-index: 2; transition: var(--transition); }
-        .activity-item:hover .activity-dot { transform: scale(1.2); box-shadow: 0 0 0 4px rgba(255,107,0,0.2); }
-        .activity-content { background: var(--bg-canvas); border: 1px solid var(--border-color); border-radius: 14px; padding: 0.9rem 1.1rem; transition: var(--transition); }
-        .activity-content:hover { border-color: rgba(255,107,0,0.15); transform: translateX(2px); }
+        /* Audit log item */
+        .audit-item { border-bottom:1px solid var(--border-color); padding:0.9rem 0; }
+        .audit-item:last-child { border-bottom:none; }
 
         /* Review mode header */
-        .review-header { background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.03)); border:1.5px solid rgba(245,158,11,0.2); border-radius:18px; padding:1.5rem 2rem; }
+        .review-header { background:linear-gradient(135deg,rgba(245,158,11,0.06),rgba(245,158,11,0.02)); border:1.5px solid rgba(245,158,11,0.25); border-radius:18px; padding:1.5rem; }
 
         /* Sticky table header */
         .sticky-header thead th { position:sticky; top:0; z-index:2; }
-
-        /* Stats row container inside exam summary cards */
-        .stats-row-container {
-            background: rgba(0, 0, 0, 0.02) !important;
-            border: 1px solid rgba(0, 0, 0, 0.05) !important;
-            transition: var(--transition);
-        }
-        body.dark-theme .stats-row-container {
-            background: rgba(255, 255, 255, 0.03) !important;
-            border-color: rgba(255, 255, 255, 0.07) !important;
-        }
-        body.dark-theme .stats-row-container .border-start,
-        body.dark-theme .stats-row-container .border-end {
-            border-color: rgba(255, 255, 255, 0.08) !important;
-        }
-
-        /* Modern styled alerts for better dark theme visibility */
-        .alert-success {
-            background-color: rgba(16, 185, 129, 0.1) !important;
-            border: 1px solid rgba(16, 185, 129, 0.15) !important;
-            color: #065f46 !important;
-        }
-        body.dark-theme .alert-success {
-            background-color: rgba(16, 185, 129, 0.15) !important;
-            color: #34d399 !important;
-        }
-        .alert-danger {
-            background-color: rgba(239, 68, 68, 0.1) !important;
-            border: 1px solid rgba(239, 68, 68, 0.15) !important;
-            color: #991b1b !important;
-        }
-        body.dark-theme .alert-danger {
-            background-color: rgba(239, 68, 68, 0.15) !important;
-            color: #f87171 !important;
-        }
     </style>
 </head>
 <body>
@@ -267,7 +219,7 @@
             <div class="review-header mb-4">
                 <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
                     <div>
-                        <span class="pill pill-warning mb-2"><i class="bi py-1 bi-eye-fill"></i> Preview Mode</span>
+                        <span class="pill pill-warning mb-2"><i class="bi bi-eye-fill"></i> Preview Mode</span>
                         <h3 class="section-title mb-1">Verify Student Eligibility Records</h3>
                         <p class="mb-0" style="font-size:13px; color:var(--text-muted);">
                             Examination: <strong th:text="${targetExamName}" style="color:var(--text-primary);">Examination</strong>
@@ -285,11 +237,11 @@
                 <!-- Stats row -->
                 <div class="row g-3 mt-3">
                     <div class="col-auto">
-                        <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:var(--card-bg); border:1px solid var(--border-color);">
+                        <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:rgba(255,255,255,0.7); border:1px solid var(--border-color);">
                             <i class="bi bi-people-fill text-primary-custom fs-5"></i>
                             <div>
-                                <div class="stat-value" id="stats-total" style="font-size:1.35rem;" th:text="${totalRecords}">0</div>
-                                <div class="stat-label" style="font-size:9px;">Total Parsed</div>
+                                <div class="stat-value" id="stats-total" style="font-size:1.5rem;" th:text="${totalRecords}">0</div>
+                                <div class="stat-label">Total Parsed</div>
                             </div>
                         </div>
                     </div>
@@ -297,8 +249,8 @@
                         <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2);">
                             <i class="bi bi-check-circle-fill text-success fs-5"></i>
                             <div>
-                                <div class="stat-value text-success" id="stats-eligible" style="font-size:1.35rem;" th:text="${matchedStudents.size()}">0</div>
-                                <div class="stat-label" style="font-size:9px;">Will Be Eligible</div>
+                                <div class="stat-value text-success" id="stats-eligible" style="font-size:1.5rem;" th:text="${matchedStudents.size()}">0</div>
+                                <div class="stat-label">Will Be Eligible</div>
                             </div>
                         </div>
                     </div>
@@ -306,8 +258,8 @@
                         <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2);">
                             <i class="bi bi-x-circle-fill text-danger fs-5"></i>
                             <div>
-                                <div class="stat-value text-danger" id="stats-failed" style="font-size:1.35rem;" th:text="${invalidRecords.size()}">0</div>
-                                <div class="stat-label" style="font-size:9px;">Failed Imports</div>
+                                <div class="stat-value text-danger" id="stats-failed" style="font-size:1.5rem;" th:text="${invalidRecords.size()}">0</div>
+                                <div class="stat-label">Failed Imports</div>
                             </div>
                         </div>
                     </div>
@@ -318,17 +270,17 @@
             <div class="card p-4">
                 <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                     <div class="section-title"><i class="bi bi-table me-2 text-primary-custom"></i>Parsed Student Records</div>
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="position-relative" style="width:220px;">
-                            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                            <input type="text" class="form-control form-control-sm ps-5" id="previewSearch" placeholder="Search preview..." onkeyup="filterPreviewTable()">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="input-group" style="width:220px;">
+                            <span class="input-group-text border-0 bg-transparent"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" class="form-control" id="previewSearch" placeholder="Search..." onkeyup="filterPreviewTable()">
                         </div>
                         <button class="btn btn-sm btn-outline-primary" onclick="showManualAddForm()"><i class="bi bi-plus-circle me-1"></i>Add Student</button>
                     </div>
                 </div>
 
                 <!-- Manual Add Form (hidden by default) -->
-                <div id="manualAddFormWrap" class="d-none mb-4 p-3 rounded-3 border border-dashed border-primary-subtle" style="background:rgba(255,107,0,0.02);">
+                <div id="manualAddFormWrap" class="d-none mb-3 p-3 rounded-3" style="background:rgba(255,107,0,0.04); border:1.5px dashed rgba(255,107,0,0.25);">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-3">
                             <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Enrollment No *</label>
@@ -374,15 +326,14 @@
                                 th:data-division="${student.division}"
                                 th:data-roll="${student.rollNo}">
                                 <td class="text-muted" style="font-size:12px;" th:text="${iterStat.count}">1</td>
-                                <td class="fw-bold font-monospace" style="font-size:13px; color: var(--text-primary);" th:text="${student.enrollmentNo}">240045012101</td>
+                                <td class="fw-bold font-monospace" style="font-size:13px;" th:text="${student.enrollmentNo}">240045012101</td>
                                 <td th:text="${student.studentName}">Raj Patel</td>
                                 <td><span class="pill pill-info" th:text="${student.division}">A</span></td>
                                 <td class="font-monospace" th:text="${student.rollNo}">13</td>
                                 <td class="text-end">
                                     <button class="btn btn-link text-danger p-0 border-0"
                                             th:data-enrollment="${student.enrollmentNo}"
-                                            onclick="removePreviewRow(this.getAttribute('data-enrollment'))"
-                                            title="Remove Student">
+                                            onclick="removePreviewRow(this.getAttribute('data-enrollment'))">
                                         <i class="bi bi-trash fs-5"></i>
                                     </button>
                                 </td>
@@ -451,29 +402,27 @@
                         <div class="exam-summary-card card">
                             <div class="d-flex align-items-start justify-content-between mb-3">
                                 <div style="flex:1; min-width:0;">
-                                    <div class="fw-bold text-truncate" style="font-family:'Outfit',sans-serif; font-size:16px; color:var(--text-primary);"
+                                    <div class="fw-bold" style="font-family:'Outfit',sans-serif; font-size:15px; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
                                          th:text="${examNamesMap.get(summary.examId)} ?: 'Exam #' + ${summary.examId}">Exam Name</div>
-                                    <div class="mt-1 d-flex gap-2 align-items-center flex-wrap">
-                                        <span th:class="${summary.examType == 'EXAM' ? 'pill pill-info' : 'pill pill-warning'}" style="font-size: 9px; padding: 2px 6px;" th:text="${summary.examType == 'EXAM' ? 'Exam' : 'Paper'}">EXAM</span>
-                                        <span th:if="${summary.isLocked}" class="pill pill-lock" style="font-size: 9px; padding: 2px 6px;"><i class="bi bi-lock-fill"></i> Locked</span>
-                                        <span th:unless="${summary.isLocked}" class="pill pill-success" style="font-size: 9px; padding: 2px 6px;"><i class="bi bi-unlock-fill"></i> Open</span>
-                                    </div>
+                                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px;" th:text="${summary.examType}">EXAM</div>
                                 </div>
+                                <span th:if="${summary.isLocked}" class="pill pill-lock ms-2"><i class="bi bi-lock-fill"></i> Locked</span>
+                                <span th:unless="${summary.isLocked}" class="pill pill-success ms-2"><i class="bi bi-unlock-fill"></i> Open</span>
                             </div>
 
                             <!-- Stats row -->
-                            <div class="row g-2 mb-3 py-2 rounded-3 stats-row-container text-center">
-                                <div class="col-4">
-                                    <div style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:800; color:var(--primary);" th:text="${summary.eligibleCount}">0</div>
-                                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Eligible</div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-4 text-center">
+                                    <div style="font-family:'Outfit',sans-serif; font-size:1.5rem; font-weight:800; color:var(--primary);" th:text="${summary.eligibleCount}">0</div>
+                                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Eligible</div>
                                 </div>
-                                <div class="col-4 border-start border-end border-light-subtle">
-                                    <div style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:800; color:var(--success);" th:text="${summary.attemptedCount}">0</div>
-                                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Attempted</div>
+                                <div class="col-4 text-center">
+                                    <div style="font-family:'Outfit',sans-serif; font-size:1.5rem; font-weight:800; color:var(--success);" th:text="${summary.attemptedCount}">0</div>
+                                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Attempted</div>
                                 </div>
-                                <div class="col-4">
-                                    <div style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:800; color:var(--warning);" th:text="${summary.pendingCount}">0</div>
-                                    <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Pending</div>
+                                <div class="col-4 text-center">
+                                    <div style="font-family:'Outfit',sans-serif; font-size:1.5rem; font-weight:800; color:var(--warning);" th:text="${summary.pendingCount}">0</div>
+                                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Pending</div>
                                 </div>
                             </div>
 
@@ -481,7 +430,7 @@
                             <div class="mini-progress mb-3" th:if="${summary.eligibleCount > 0}">
                                 <div class="mini-progress-fill"
                                      style="background:var(--success);"
-                                     th:style="'background:linear-gradient(90deg, var(--success) 0%, #059669 100%); width:' + ${(summary.attemptedCount * 100 / summary.eligibleCount)} + '%'"></div>
+                                     th:style="'background:var(--success); width:' + ${(summary.attemptedCount * 100 / summary.eligibleCount)} + '%'"></div>
                             </div>
                             <div class="mini-progress mb-3" th:unless="${summary.eligibleCount > 0}">
                                 <div class="mini-progress-fill" style="background:var(--success); width:0%;"></div>
@@ -489,9 +438,9 @@
 
                             <!-- Lock banner -->
                             <div th:if="${summary.isLocked}" class="lock-banner mb-3">
-                                <div class="d-flex align-items-center gap-2" style="font-size:11px; color:var(--text-muted);">
-                                    <i class="bi bi-lock-fill text-muted"></i>
-                                    List locked (Exam already started).
+                                <div class="d-flex align-items-center gap-2" style="font-size:12px; color:var(--text-muted);">
+                                    <i class="bi bi-lock-fill"></i>
+                                    Student eligibility list is locked because the examination has already started.
                                 </div>
                             </div>
 
@@ -504,7 +453,7 @@
                                     <i class="bi bi-pencil-square me-1"></i>Manage Students
                                 </button>
                                 <a th:href="@{/admin/eligible-students/download/{id}(id=${summary.examId})}"
-                                   class="btn btn-sm btn-outline-primary" title="Download CSV">
+                                   class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-download"></i>
                                 </a>
                             </div>
@@ -541,9 +490,9 @@
                                 <span class="pill pill-info ms-2" th:text="${eligibilityList.size()} + ' total'">0 total</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
-                                <div class="position-relative" style="width:220px;">
-                                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                                    <input type="text" class="form-control form-control-sm ps-5" id="mainSearch" placeholder="Search students..." onkeyup="filterMainList()">
+                                <div class="input-group" style="width:200px;">
+                                    <span class="input-group-text border-0 bg-transparent"><i class="bi bi-search text-muted"></i></span>
+                                    <input type="text" class="form-control form-control-sm" id="mainSearch" placeholder="Enrollment / Name..." onkeyup="filterMainList()">
                                 </div>
                             </div>
                         </div>
@@ -568,41 +517,38 @@
                                         th:data-name="${rec.studentName}"
                                         th:data-roll="${rec.rollNo}"
                                         th:id="'rec-' + ${rec.id}">
-                                        <td class="fw-bold font-monospace" style="font-size:13px; color: var(--text-primary);" th:text="${rec.enrollmentNo}">240045012101</td>
+                                        <td class="fw-bold font-monospace" style="font-size:13px;" th:text="${rec.enrollmentNo}">240045012101</td>
                                         <td>
                                             <input type="text" class="edit-field"
                                                    th:value="${rec.studentName}"
                                                    th:id="'name-' + ${rec.id}"
                                                    th:data-id="${rec.id}"
-                                                   onblur="saveEdit(this.getAttribute('data-id'))"
-                                                   title="Click to edit name">
+                                                   onblur="saveEdit(this.getAttribute('data-id'))">
                                         </td>
                                         <td>
-                                            <input type="text" class="edit-field font-monospace text-center" style="width:50px;"
+                                            <input type="text" class="edit-field" style="width:60px;"
                                                    th:value="${rec.division}"
                                                    th:id="'div-' + ${rec.id}"
                                                    th:data-id="${rec.id}"
-                                                   onblur="saveEdit(this.getAttribute('data-id'))"
-                                                   title="Click to edit division">
+                                                   onblur="saveEdit(this.getAttribute('data-id'))">
                                         </td>
                                         <td>
-                                            <input type="text" class="edit-field font-monospace text-center" style="width:70px;"
+                                            <input type="text" class="edit-field" style="width:60px;"
                                                    th:value="${rec.rollNo}"
                                                    th:id="'roll-' + ${rec.id}"
                                                    th:data-id="${rec.id}"
-                                                   onblur="saveEdit(this.getAttribute('data-id'))"
-                                                   title="Click to edit roll number">
+                                                   onblur="saveEdit(this.getAttribute('data-id'))">
                                         </td>
                                         <td>
-                                            <span class="text-truncate d-inline-block" style="max-width:160px; font-weight: 500;" th:text="${examNamesMap.get(rec.examId)} ?: '#' + ${rec.examId}">Exam Name</span>
+                                            <span class="text-truncate d-inline-block" style="max-width:160px;" th:text="${examNamesMap.get(rec.examId)} ?: '#' + ${rec.examId}">Exam Name</span>
                                         </td>
                                         <td style="font-size:12px; color:var(--text-muted);" th:text="${#temporals.format(rec.importedAt, 'dd MMM yyyy')}">Date</td>
                                         <td class="text-end">
                                             <form th:action="@{/admin/eligible-students/delete}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this student from the eligibility list?');">
                                                 <input type="hidden" name="examId" th:value="${rec.examId}">
                                                 <input type="hidden" name="enrollmentNo" th:value="${rec.enrollmentNo}">
-                                                <button type="submit" class="btn btn-link text-danger p-0 border-0 ms-2" title="Remove Student">
-                                                    <i class="bi bi-trash fs-5"></i>
+                                                <button type="submit" class="btn btn-link text-danger p-0 border-0 ms-2" title="Remove">
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
                                         </td>
@@ -622,25 +568,25 @@
                 <!-- Audit Log Panel -->
                 <div class="col-lg-4">
                     <div class="card p-4">
-                        <h3 class="section-title mb-4"><i class="bi bi-journal-text me-2 text-primary-custom"></i>Upload History</h3>
+                        <h3 class="section-title mb-3"><i class="bi bi-journal-text me-2 text-primary-custom"></i>Upload History</h3>
                         <div th:if="${auditLogs.isEmpty()}" class="text-center text-muted py-4">
                             <i class="bi bi-journal fs-2 d-block mb-2"></i>
                             No upload records yet.
                         </div>
-                        <div class="activity-timeline" th:unless="${auditLogs.isEmpty()}">
-                            <div th:each="log : ${auditLogs}" class="activity-item">
-                                <div class="activity-dot"></div>
-                                <div class="activity-content">
-                                    <div class="fw-bold text-truncate" style="font-size:13px; color:var(--text-primary);" th:text="${log.fileName}" th:title="${log.fileName}">file.csv</div>
-                                    <div style="font-size:11px; color:var(--text-muted); margin-top: 2px;">
-                                        Uploaded by <strong th:text="${log.uploadedBy}">admin</strong>
+                        <div th:each="log : ${auditLogs}" class="audit-item">
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="stat-icon flex-shrink-0" style="width:36px; height:36px; border-radius:10px; background:rgba(255,107,0,0.08); font-size:1rem;">
+                                    <i class="bi bi-file-earmark-check text-primary-custom"></i>
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <div class="fw-bold text-truncate" style="font-size:13px; color:var(--text-primary);" th:text="${log.fileName}">file.csv</div>
+                                    <div style="font-size:11px; color:var(--text-muted);">
+                                        By <strong th:text="${log.uploadedBy}">admin</strong>
+                                        · <span th:text="${#temporals.format(log.uploadDate, 'dd MMM yyyy, HH:mm')}">Date</span>
                                     </div>
-                                    <div style="font-size:11px; color:var(--text-muted); margin-top: 2px;">
-                                        <i class="bi bi-clock me-1"></i> <span th:text="${#temporals.format(log.uploadDate, 'dd MMM yyyy, HH:mm')}">Date</span>
-                                    </div>
-                                    <div class="d-flex gap-2 mt-2 flex-wrap">
-                                        <span class="pill pill-success" style="font-size:9px; padding: 2px 8px;"><i class="bi bi-people-fill"></i> <span th:text="${log.totalImported}">0</span> imported</span>
-                                        <span th:if="${log.lastModifiedDate != null}" class="pill pill-info" style="font-size:9px; padding: 2px 8px;">
+                                    <div class="d-flex gap-2 mt-1">
+                                        <span class="pill pill-success" style="font-size:10px;"><i class="bi bi-people-fill"></i> <span th:text="${log.totalImported}">0</span> imported</span>
+                                        <span th:if="${log.lastModifiedDate != null}" class="pill pill-info" style="font-size:10px;">
                                             Modified <span th:text="${#temporals.format(log.lastModifiedDate, 'dd MMM')}">Date</span>
                                         </span>
                                     </div>
@@ -658,14 +604,14 @@
 <!-- ─── Exam Detail Modal (for Manage Students) ─── -->
 <div class="modal fade" id="examDetailModal" tabindex="-1" aria-labelledby="examDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="border-radius:20px; border:1px solid var(--border-color); background:var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+        <div class="modal-content" style="border-radius:20px; border:1px solid var(--border-color); background:var(--card-bg);">
             <div class="modal-header" style="border-bottom:1px solid var(--border-color);">
-                <h5 class="modal-title section-title" id="examDetailModalLabel"><i class="bi bi-people-fill me-2 text-primary-custom"></i>Manage Students</h5>
+                <h5 class="modal-title section-title" id="examDetailModalLabel">Manage Students</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <!-- Add Student Row -->
-                <div class="mb-4 p-3 rounded-3 border border-dashed border-primary-subtle" style="background:rgba(255,107,0,0.02);">
+                <div class="mb-3 p-3 rounded-3" style="background:rgba(255,107,0,0.04); border:1.5px dashed rgba(255,107,0,0.25);">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-3">
                             <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Enrollment No *</label>
@@ -677,11 +623,11 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Division</label>
-                            <input type="text" class="form-control form-control-sm text-center" id="modalDiv" value="A">
+                            <input type="text" class="form-control form-control-sm" id="modalDiv" value="A">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-muted);">Roll No</label>
-                            <input type="text" class="form-control form-control-sm text-center" id="modalRoll" placeholder="e.g. 13">
+                            <input type="text" class="form-control form-control-sm" id="modalRoll" placeholder="e.g. 13">
                         </div>
                         <div class="col-md-2">
                             <button class="btn btn-sm btn-primary w-100" onclick="addStudentToExam()"><i class="bi bi-plus me-1"></i>Add</button>
@@ -690,12 +636,12 @@
                     <div id="modalAddError" class="text-danger mt-2 d-none" style="font-size:12px;"></div>
                 </div>
 
-                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                    <div class="position-relative" style="width:220px;">
-                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                        <input type="text" class="form-control form-control-sm ps-5" id="modalSearch" placeholder="Search students..." onkeyup="filterModalTable()">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="input-group" style="width:220px;">
+                        <span class="input-group-text border-0 bg-transparent"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control form-control-sm" id="modalSearch" placeholder="Search..." onkeyup="filterModalTable()">
                     </div>
-                    <span class="pill pill-info" style="font-size:10px;">Total: <strong id="modalCount">0</strong></span>
+                    <small class="text-muted">Total: <strong id="modalCount">0</strong></small>
                 </div>
 
                 <div class="table-responsive" style="max-height:350px; overflow-y:auto;">
@@ -983,13 +929,13 @@
         tbody.innerHTML = data.map((rec, idx) => `
             <tr class="modal-row" id="mrow-${rec.id}" data-enrollment="${rec.enrollmentNo}" data-name="${rec.studentName || ''}" data-roll="${rec.rollNo || ''}">
                 <td class="text-muted" style="font-size:12px;">${idx + 1}</td>
-                <td class="fw-bold font-monospace text-primary-custom" style="font-size:13px;">${rec.enrollmentNo}</td>
-                <td><input type="text" class="edit-field" id="mname-${rec.id}" value="${escHtml(rec.studentName)}" onblur="saveModalEdit(${rec.id})" title="Click to edit name"></td>
-                <td><input type="text" class="edit-field font-monospace text-center" id="mdiv-${rec.id}" value="${escHtml(rec.division)}" style="width:50px;" onblur="saveModalEdit(${rec.id})" title="Click to edit division"></td>
-                <td><input type="text" class="edit-field font-monospace text-center" id="mroll-${rec.id}" value="${escHtml(rec.rollNo)}" style="width:70px;" onblur="saveModalEdit(${rec.id})" title="Click to edit roll number"></td>
+                <td class="fw-bold font-monospace" style="font-size:13px;">${rec.enrollmentNo}</td>
+                <td><input type="text" class="edit-field" id="mname-${rec.id}" value="${escHtml(rec.studentName)}" onblur="saveModalEdit(${rec.id})"></td>
+                <td><input type="text" class="edit-field" id="mdiv-${rec.id}" value="${escHtml(rec.division)}" style="width:60px;" onblur="saveModalEdit(${rec.id})"></td>
+                <td><input type="text" class="edit-field" id="mroll-${rec.id}" value="${escHtml(rec.rollNo)}" style="width:60px;" onblur="saveModalEdit(${rec.id})"></td>
                 <td class="text-end">
-                    <button class="btn btn-link text-danger p-0 border-0" onclick="deleteModalStudent(${rec.id}, '${escHtml(rec.enrollmentNo)}')" title="Remove Student">
-                        <i class="bi bi-trash fs-5"></i>
+                    <button class="btn btn-link text-danger p-0 border-0" onclick="deleteModalStudent(${rec.id}, '${escHtml(rec.enrollmentNo)}')">
+                        <i class="bi bi-trash"></i>
                     </button>
                 </td>
             </tr>
@@ -1093,13 +1039,13 @@
             tr.setAttribute('data-roll', data.rollNo || '');
             tr.innerHTML = `
                 <td class="text-muted" style="font-size:12px;">${count}</td>
-                <td class="fw-bold font-monospace text-primary-custom" style="font-size:13px;">${escHtml(data.enrollmentNo)}</td>
-                <td><input type="text" class="edit-field" id="mname-${data.id}" value="${escHtml(data.studentName)}" onblur="saveModalEdit(${data.id})" title="Click to edit name"></td>
-                <td><input type="text" class="edit-field font-monospace text-center" id="mdiv-${data.id}" value="${escHtml(data.division)}" style="width:50px;" onblur="saveModalEdit(${data.id})" title="Click to edit division"></td>
-                <td><input type="text" class="edit-field font-monospace text-center" id="mroll-${data.id}" value="${escHtml(data.rollNo)}" style="width:70px;" onblur="saveModalEdit(${data.id})" title="Click to edit roll number"></td>
+                <td class="fw-bold font-monospace" style="font-size:13px;">${escHtml(data.enrollmentNo)}</td>
+                <td><input type="text" class="edit-field" id="mname-${data.id}" value="${escHtml(data.studentName)}" onblur="saveModalEdit(${data.id})"></td>
+                <td><input type="text" class="edit-field" id="mdiv-${data.id}" value="${escHtml(data.division)}" style="width:60px;" onblur="saveModalEdit(${data.id})"></td>
+                <td><input type="text" class="edit-field" id="mroll-${data.id}" value="${escHtml(data.rollNo)}" style="width:60px;" onblur="saveModalEdit(${data.id})"></td>
                 <td class="text-end">
-                    <button class="btn btn-link text-danger p-0 border-0" onclick="deleteModalStudent(${data.id}, '${escHtml(data.enrollmentNo)}')" title="Remove Student">
-                        <i class="bi bi-trash fs-5"></i>
+                    <button class="btn btn-link text-danger p-0 border-0" onclick="deleteModalStudent(${data.id}, '${escHtml(data.enrollmentNo)}')">
+                        <i class="bi bi-trash"></i>
                     </button>
                 </td>
             `;
