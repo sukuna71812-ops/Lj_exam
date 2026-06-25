@@ -39,15 +39,38 @@ public class ExamApplication {
 				
 				System.setProperty("spring.datasource.url", dbUrl);
 				
-				System.out.println("--- Railway PostgreSQL Configuration Prepared ---");
+				System.out.println("--- Railway PostgreSQL Configuration Prepared from DATABASE_URL ---");
 				System.out.println("URL: " + dbUrl);
 				System.out.println("Username: " + (userInfo != null ? userInfo.split(":")[0] : ""));
-				System.out.println("-------------------------------------------------");
+				System.out.println("------------------------------------------------------------------");
+				return;
 			} catch (Exception e) {
 				System.err.println("Failed to parse Railway DATABASE_URL: " + e.getMessage());
 			}
+		}
+
+		// Fallback to individual PG* environment variables if present
+		String pgHost = System.getenv("PGHOST");
+		String pgPort = System.getenv("PGPORT");
+		String pgDatabase = System.getenv("PGDATABASE");
+		String pgUser = System.getenv("PGUSER");
+		String pgPassword = System.getenv("PGPASSWORD");
+
+		if (pgHost != null && !pgHost.trim().isEmpty() && pgUser != null && !pgUser.trim().isEmpty()) {
+			String port = (pgPort == null || pgPort.trim().isEmpty()) ? "5432" : pgPort;
+			String database = (pgDatabase == null || pgDatabase.trim().isEmpty()) ? "postgres" : pgDatabase;
+			String dbUrl = "jdbc:postgresql://" + pgHost + ":" + port + "/" + database;
+
+			System.setProperty("spring.datasource.url", dbUrl);
+			System.setProperty("spring.datasource.username", pgUser);
+			System.setProperty("spring.datasource.password", pgPassword != null ? pgPassword : "");
+
+			System.out.println("--- Railway PostgreSQL Configuration Prepared from PG* Environment Variables ---");
+			System.out.println("URL: " + dbUrl);
+			System.out.println("Username: " + pgUser);
+			System.out.println("--------------------------------------------------------------------------------");
 		} else {
-			System.out.println("No DATABASE_URL environment variable found. Falling back to local configuration.");
+			System.out.println("No DATABASE_URL or PG* environment variables found. Falling back to local configuration.");
 		}
 	}
   
