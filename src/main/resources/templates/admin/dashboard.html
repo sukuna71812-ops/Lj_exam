@@ -812,7 +812,7 @@
                                 <!-- Show Countdown Timer and End Exam button if ACTIVE -->
                                 <div th:if="${p.examStatus == 'ACTIVE'}" class="d-inline-flex align-items-center gap-2">
                                     <div class="timer-badge-premium active-countdown-timer"
-                                         th:attr="data-paper-id=${p.id}, data-activation-time=${p.activationTime != null ? p.activationTime.atZone(T(java.time.ZoneId).of('Asia/Kolkata')).toInstant() : ''}, data-duration=${p.examDuration}">
+                                         th:attr="data-paper-id=${p.id}, data-activation-time=${p.activationTime != null ? #temporals.format(p.activationTime, 'yyyy-MM-dd\'T\'HH:mm:ss+05:30') : ''}, data-duration=${p.examDuration}">
                                         <i class="bi bi-stopwatch animate-pulse"></i>
                                         <span class="timer-countdown-text">--:--</span>
                                     </div>
