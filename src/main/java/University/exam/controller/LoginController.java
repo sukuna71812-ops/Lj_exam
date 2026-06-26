@@ -84,12 +84,31 @@ public class LoginController {
             studentActiveSessionRepository.findByStudentIdAndStatus(trimmedEnrollment, "ACTIVE");
              
         if (activeSessionOpt.isPresent()) {
-            // Block login immediately since an active session already exists
-            University.exam.Entity.StudentLoginAttempt attempt = new University.exam.Entity.StudentLoginAttempt(
-                trimmedEnrollment, ipAddress, browserInfo, deviceInfo, "BLOCKED"
-            );
-            studentLoginAttemptRepository.save(attempt);
-            return "redirect:/?error=already_logged_in";
+            University.exam.Entity.StudentActiveSession activeSession = activeSessionOpt.get();
+            java.time.LocalDateTime lastActivity = activeSession.getLastActivity();
+            java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusSeconds(60);
+
+            // Allow re-login if the session is disconnected (inactive for >60s), OR if the login attempt is from the exact same device and browser
+            boolean isSameDevice = ipAddress != null && ipAddress.equals(activeSession.getIpAddress())
+                && browserInfo != null && browserInfo.equals(activeSession.getBrowserInfo());
+
+            if (lastActivity != null && lastActivity.isAfter(cutoff) && !isSameDevice) {
+                // Block login immediately since the session is actively connected on another device
+                System.out.println("[Student Login Blocked] Enrollment: " + trimmedEnrollment + " already active (lastActivity: " + lastActivity + ")");
+                University.exam.Entity.StudentLoginAttempt attempt = new University.exam.Entity.StudentLoginAttempt(
+                    trimmedEnrollment, ipAddress, browserInfo, deviceInfo, "BLOCKED"
+                );
+                studentLoginAttemptRepository.save(attempt);
+                return "redirect:/?error=already_logged_in";
+            } else {
+                // The session is disconnected (no activity for >60s), OR the same student is reconnecting from the same device.
+                // Mark the old active session record as COMPLETED so they can login again cleanly
+                activeSession.setStatus("COMPLETED");
+                activeSession.setLogoutTime(java.time.LocalDateTime.now());
+                studentActiveSessionRepository.save(activeSession);
+                studentActiveSessionRepository.flush();
+                System.out.println("[Student Login] Re-login allowed for enrollment: " + trimmedEnrollment + " (previous session was inactive or matching device)");
+            }
         }
 
         // Log successful login attempt
