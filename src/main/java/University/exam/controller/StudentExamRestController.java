@@ -49,6 +49,7 @@ public class StudentExamRestController {
 
     @GetMapping("/exam/{id}/status")
     public ResponseEntity<?> getExamStatus(@PathVariable("id") Long id, @RequestParam(name = "type", required = false) String type) {
+        System.out.println("[Student Status Check Request] Exam/Paper ID: " + id + " | Type: " + type);
         String status = "DRAFT";
         if ("exam".equals(type)) {
             Optional<Exam> examOpt = examRepository.findById(id);
@@ -67,6 +68,7 @@ public class StudentExamRestController {
             }
         }
         if (status == null) status = "DRAFT";
+        System.out.println("[Student Status Check Response] Exam/Paper ID: " + id + " | Type: " + type + " | Returned Status: " + status);
         Map<String, String> response = new HashMap<>();
         response.put("status", status);
         return ResponseEntity.ok(response);
