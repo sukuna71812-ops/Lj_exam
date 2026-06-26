@@ -8,11 +8,11 @@ public class ExamApplication {
 
 	@jakarta.annotation.PostConstruct
 	public void init() {
-		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Kolkata"));
 	}
 
 	public static void main(String[] args) {
-		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Kolkata"));
 		String databaseUrl = System.getenv("DATABASE_URL");
 		configureDatabaseConnection(databaseUrl);
 		SpringApplication.run(ExamApplication.class, args);
@@ -42,10 +42,10 @@ public class ExamApplication {
 				if (query != null && !query.trim().isEmpty()) {
 					dbUrl += "?" + query;
 					if (!query.contains("timezone")) {
-						dbUrl += "&options=-c%20timezone=UTC";
+						dbUrl += "&options=-c%20timezone=Asia%2FKolkata";
 					}
 				} else {
-					dbUrl += "?options=-c%20timezone=UTC";
+					dbUrl += "?options=-c%20timezone=Asia%2FKolkata";
 				}
 				
 				System.setProperty("spring.datasource.url", dbUrl);
@@ -70,7 +70,7 @@ public class ExamApplication {
 		if (pgHost != null && !pgHost.trim().isEmpty() && pgUser != null && !pgUser.trim().isEmpty()) {
 			String port = (pgPort == null || pgPort.trim().isEmpty()) ? "5432" : pgPort;
 			String database = (pgDatabase == null || pgDatabase.trim().isEmpty()) ? "postgres" : pgDatabase;
-			String dbUrl = "jdbc:postgresql://" + pgHost + ":" + port + "/" + database + "?options=-c%20timezone=UTC";
+			String dbUrl = "jdbc:postgresql://" + pgHost + ":" + port + "/" + database + "?options=-c%20timezone=Asia%2FKolkata";
 
 			System.setProperty("spring.datasource.url", dbUrl);
 			System.setProperty("spring.datasource.username", pgUser);

@@ -128,12 +128,16 @@ public class AdminDashboardController {
         for (Paper paper : papers) {
             if ("ACTIVE".equals(paper.getExamStatus()) && paper.getActivationTime() != null && paper.getExamDuration() != null) {
                 LocalDateTime endTime = paper.getActivationTime().plusMinutes(paper.getExamDuration());
+                long remainingSeconds = java.time.Duration.between(now, endTime).getSeconds();
+                System.out.println("[Timezone Debug] Dashboard load check - Paper ID " + paper.getId() + 
+                    " | ActivationTime: " + paper.getActivationTime() + 
+                    " | Duration: " + paper.getExamDuration() + "m" +
+                    " | EndTime: " + endTime + 
+                    " | CurrentTime (JVM): " + now +
+                    " | RemainingSeconds: " + remainingSeconds);
                 if (now.isAfter(endTime)) {
                     System.out.println("[Timezone Debug] Auto-terminating Paper ID " + paper.getId() + 
-                        " | ActivationTime (from DB): " + paper.getActivationTime() + 
-                        " | Duration: " + paper.getExamDuration() + "m" +
-                        " | EndTime: " + endTime + 
-                        " | CurrentTime (JVM): " + now);
+                        " | Reason: duration expired");
                     paper.setExamStatus("ENDED");
                     paperRepository.save(paper);
                     paperChanged = true;
@@ -457,13 +461,21 @@ public class AdminDashboardController {
         paperRepository.findById(id).ifPresent(paper -> {
             if (paper.getAdmin() != null && paper.getAdmin().getId().equals(admin.getId())) {
                 LocalDateTime now = LocalDateTime.now();
+                String statusBefore = paper.getExamStatus();
                 paper.setExamStatus("ACTIVE");
                 paper.setActivationTime(now);
                 paper.setActivatedTime(now);
                 if (paper.getPublishedTime() == null) {
                     paper.setPublishedTime(now);
                 }
-                paperRepository.save(paper);
+                Paper saved = paperRepository.save(paper);
+                System.out.println("[Exam Activation Log] Paper ID: " + paper.getId() +
+                    " | Status Before: " + statusBefore +
+                    " | Status After: " + saved.getExamStatus() +
+                    " | ActivationTime (Start Time): " + saved.getActivationTime() +
+                    " | Current Server Time: " + now +
+                    " | Duration: " + saved.getExamDuration() + "m" +
+                    " | DB Update Result: SUCCESS (Saved ID " + saved.getId() + ")");
             }
         });
         return "redirect:/admin/dashboard";
@@ -477,13 +489,21 @@ public class AdminDashboardController {
         }
         examRepository.findById(id).ifPresent(exam -> {
             LocalDateTime now = LocalDateTime.now();
+            String statusBefore = exam.getExamStatus();
             exam.setExamStatus("ACTIVE");
             exam.setActivationTime(now);
             exam.setActivatedTime(now);
             if (exam.getPublishedTime() == null) {
                 exam.setPublishedTime(now);
             }
-            examRepository.save(exam);
+            University.exam.Entity.Exam saved = examRepository.save(exam);
+            System.out.println("[Exam Activation Log] Exam ID: " + exam.getId() +
+                " | Status Before: " + statusBefore +
+                " | Status After: " + saved.getExamStatus() +
+                " | ActivationTime (Start Time): " + saved.getActivationTime() +
+                " | Current Server Time: " + now +
+                " | Duration: " + saved.getExamDuration() + "m" +
+                " | DB Update Result: SUCCESS (Saved ID " + saved.getId() + ")");
         });
         return "redirect:/admin/dashboard";
     }
