@@ -252,6 +252,52 @@
             color: var(--text-muted);
             border: 1px solid rgba(100, 116, 139, 0.2);
         }
+
+        /* Premium dashboard styles */
+        .summary-card {
+            border: 1px solid var(--border-color) !important;
+            border-radius: 18px !important;
+            padding: 1.25rem;
+            background: var(--card-bg);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-shadow-hover);
+        }
+        .card-icon-wrapper {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 20px;
+            margin-bottom: 0.75rem;
+        }
+        .icon-blue {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        .icon-green {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        .icon-indigo {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+        }
+        .icon-red {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        .icon-secondary {
+            background-color: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+        }
     </style>
     <script>
         (function() {
@@ -284,26 +330,113 @@
             </div>
         </header>
 
+        <!-- Premium Exam Timer Card -->
+        <div class="card border-0 p-4 shadow-sm rounded-4 mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+            <div class="row align-items-center">
+                <div class="col-lg-8 col-md-7">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-primary text-white rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: var(--primary-gradient) !important;">
+                            <i class="bi bi-alarm-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h3 class="h5 mb-0 fw-bold" style="color: var(--text-primary);">Exam Countdown Timer</h3>
+                            <div class="text-muted small">
+                                Exam Duration: <span id="timer-duration" class="fw-bold text-dark dark-text-light">0</span> Minutes | 
+                                Started: <span id="timer-started" class="fw-semibold text-secondary">N/A</span> | 
+                                Ends: <span id="timer-ends" class="fw-semibold text-secondary">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-5 text-md-end mt-3 mt-md-0 d-flex justify-content-md-end align-items-center gap-4">
+                    <div class="text-start pe-4 border-end" style="border-color: var(--border-color) !important;">
+                        <div class="text-muted small fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">REMAINING TIME</div>
+                        <div class="fs-3 fw-bold text-danger font-monospace" id="timer-remaining">00:00:00</div>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-danger fw-bold d-flex align-items-center gap-2" id="endExamBtn" style="border-radius: 12px; padding: 0.65rem 1.5rem; background-color: #ef4444; border-color: #ef4444;">
+                            <i class="bi bi-slash-circle"></i> End Exam
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Summary Stats Grid -->
+        <div class="row g-3 mb-4">
+            <div class="col">
+                <div class="summary-card">
+                    <div class="card-icon-wrapper icon-blue">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Eligible Students</div>
+                    <div class="fs-3 fw-bold text-dark dark-text-light" id="summary-eligible">0</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="summary-card">
+                    <div class="card-icon-wrapper icon-green">
+                        <i class="bi bi-play-circle-fill"></i>
+                    </div>
+                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Currently Active</div>
+                    <div class="fs-3 fw-bold text-success" id="summary-active">0</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="summary-card">
+                    <div class="card-icon-wrapper icon-indigo">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Submitted</div>
+                    <div class="fs-3 fw-bold text-primary" id="summary-submitted">0</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="summary-card">
+                    <div class="card-icon-wrapper icon-red">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Disconnected</div>
+                    <div class="fs-3 fw-bold text-danger" id="summary-disconnected">0</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="summary-card">
+                    <div class="card-icon-wrapper icon-secondary">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Remaining</div>
+                    <div class="fs-3 fw-bold text-secondary" id="summary-remaining">0</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Filters Box -->
         <div class="filter-panel mb-4">
             <form id="filterForm" class="row g-3 align-items-end" onsubmit="event.preventDefault();">
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label class="form-label label-custom fw-bold small text-meta" for="examSelect">Select Examination</label>
+                    <select id="examSelect" class="form-select">
+                        <option th:each="opt : ${allExamsList}" th:value="${opt.value}" th:text="${opt.text}" th:selected="${opt.selected}"></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <label class="form-label label-custom fw-bold small text-meta" for="searchInput">Search Student</label>
                     <div class="input-group">
                         <span class="input-group-text border-end-0 bg-transparent" style="border-color: var(--border-color); color: var(--text-muted);">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search by Enrollment, Name or Roll No..." th:value="${searchQuery}">
+                        <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search by Enrollment or Name..." th:value="${searchQuery}">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label label-custom fw-bold small text-meta" for="divisionSelect">Filter by Division</label>
                     <select id="divisionSelect" class="form-select">
                         <option value="">All Divisions</option>
                         <option th:each="divName : ${distinctDivisions}" th:value="${divName}" th:text="${divName}" th:selected="${divName == selectedDivision}"></option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="row g-2">
                         <div class="col-6">
                             <button type="button" class="btn btn-primary w-100" id="searchBtn" style="border-radius: 12px; padding: 0.65rem 1rem;">
@@ -312,7 +445,7 @@
                         </div>
                         <div class="col-6">
                             <button type="button" class="btn btn-outline-primary w-100" id="clearFiltersBtn" style="border-radius: 12px; padding: 0.65rem 1rem;">
-                                <i class="bi bi-x-circle me-1"></i> Clear Filters
+                                <i class="bi bi-x-circle me-1"></i> Clear
                             </button>
                         </div>
                     </div>
@@ -325,21 +458,24 @@
             <button type="button" class="status-tab-btn active" data-status="all">
                 <i class="bi bi-people-fill me-1.5"></i> All Students (<span id="count-all">0</span>)
             </button>
-            <button type="button" class="status-tab-btn" data-status="started">
-                <i class="bi bi-play-circle-fill me-1.5 text-success"></i> Started Exam (<span id="count-started">0</span>)
+            <button type="button" class="status-tab-btn" data-status="active">
+                <i class="bi bi-play-circle-fill me-1.5 text-success"></i> Active (<span id="count-active">0</span>)
             </button>
-            <button type="button" class="status-tab-btn" data-status="logged-in-not-started">
-                <i class="bi bi-box-arrow-in-right me-1.5 text-warning"></i> Logged In, Not Started (<span id="count-logged-in-not-started">0</span>)
+            <button type="button" class="status-tab-btn" data-status="submitted">
+                <i class="bi bi-check-circle-fill me-1.5 text-primary"></i> Submitted (<span id="count-submitted">0</span>)
             </button>
-            <button type="button" class="status-tab-btn" data-status="not-logged-in">
-                <i class="bi bi-cloud-slash-fill me-1.5 text-muted"></i> Not Logged In (<span id="count-not-logged-in">0</span>)
+            <button type="button" class="status-tab-btn" data-status="disconnected">
+                <i class="bi bi-exclamation-triangle-fill me-1.5 text-danger"></i> Disconnected (<span id="count-disconnected">0</span>)
             </button>
             <button type="button" class="status-tab-btn" data-status="completed">
-                <i class="bi bi-check-circle-fill me-1.5 text-primary"></i> Completed (<span id="count-completed">0</span>)
+                <i class="bi bi-flag-fill me-1.5 text-indigo" style="color: #6366f1;"></i> Completed (<span id="count-completed">0</span>)
+            </button>
+            <button type="button" class="status-tab-btn" data-status="remaining">
+                <i class="bi bi-cloud-slash-fill me-1.5 text-muted"></i> Remaining (<span id="count-remaining">0</span>)
             </button>
         </div>
 
-        <!-- Monitoring List -->
+        <!-- Monitoring List Table -->
         <div class="card border-0 saas-table-card">
             <div class="table-responsive">
                 <table class="table align-middle saas-table">
@@ -348,18 +484,19 @@
                             <th>Student Details</th>
                             <th>Enrollment No</th>
                             <th>Division</th>
-                            <th>Room No</th>
-                            <th>Computer No</th>
                             <th>Current Section</th>
                             <th>Current Question</th>
-                            <th>Time Remaining</th>
+                            <th>Last Saved</th>
+                            <th>Remaining Time</th>
                             <th>Status</th>
-                            <th>Last Activity</th>
+                            <th>Login Time</th>
+                            <th>Progress</th>
+                            <th>Connection Status</th>
                         </tr>
                     </thead>
                     <tbody id="activityTableBody">
                         <tr id="loading-state-row">
-                            <td colspan="10" class="text-center py-5">
+                            <td colspan="11" class="text-center py-5">
                                 <div class="text-muted fs-5">
                                     <i class="bi bi-arrow-repeat spin me-2 text-primary"></i> Loading active student dashboard...
                                 </div>
@@ -371,11 +508,12 @@
         </div>
     </main>
 
-    <!-- AJAX Auto-Refresh Logic -->
+    <!-- AJAX Auto-Refresh & Countdown Logic -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const searchInput = document.getElementById("searchInput");
             const divisionSelect = document.getElementById("divisionSelect");
+            const examSelect = document.getElementById("examSelect");
             const clearFiltersBtn = document.getElementById("clearFiltersBtn");
             const tableBody = document.getElementById("activityTableBody");
             const refreshIndicator = document.getElementById("auto-refresh-indicator");
@@ -384,7 +522,10 @@
             let countdown = 5;
             let refreshInterval;
             let cachedActivities = [];
+            let cachedSummary = {};
             let selectedStatusFilter = "all";
+            let examRemainingSeconds = 0;
+            let examStatus = "DRAFT";
 
             function decrementTimeString(timeStr) {
                 if (!timeStr || timeStr === "N/A" || !timeStr.includes(":")) return timeStr;
@@ -420,29 +561,13 @@
                 }
             }
 
-            function formatTime(dateTimeStr) {
-                if (!dateTimeStr || dateTimeStr === "N/A") return "N/A";
-                try {
-                    const date = new Date(dateTimeStr);
-                    let hours = date.getHours();
-                    let minutes = date.getMinutes();
-                    let seconds = date.getSeconds();
-                    const ampm = hours >= 12 ? 'PM' : 'AM';
-                    hours = hours % 12;
-                    hours = hours ? hours : 12;
-                    minutes = minutes < 10 ? '0' + minutes : minutes;
-                    seconds = seconds < 10 ? '0' + seconds : seconds;
-                    return hours + ':' + minutes + ':' + seconds + ' ' + ampm;
-                } catch (e) {
-                    return dateTimeStr;
-                }
-            }
-
             async function fetchActivityData() {
                 const search = searchInput.value.trim();
                 const division = divisionSelect.value;
+                const selectedExam = examSelect.value;
                 
                 let url = `/admin/live-monitor?format=json`;
+                if (selectedExam) url += `&examSelect=${encodeURIComponent(selectedExam)}`;
                 if (search) url += `&search=${encodeURIComponent(search)}`;
                 if (division) url += `&division=${encodeURIComponent(division)}`;
 
@@ -454,7 +579,7 @@
                     });
                     if (response.ok) {
                         const data = await response.json();
-                        updateTable(data);
+                        updateDashboard(data);
                     } else if (response.status === 401) {
                         window.location.href = "/admin-login";
                     }
@@ -463,51 +588,62 @@
                 }
             }
 
-            function updateTable(activities) {
-                cachedActivities = activities || [];
+            function updateDashboard(data) {
+                cachedActivities = data.students || [];
+                cachedSummary = data.summary || {};
 
-                // Calculate category counts
-                let countAll = cachedActivities.length;
-                let countStarted = 0;
-                let countLoggedInNotStarted = 0;
-                let countNotLoggedIn = 0;
-                let countCompleted = 0;
+                // Update Dashboard Metrics Summary
+                document.getElementById("summary-eligible").textContent = cachedSummary.eligible || 0;
+                document.getElementById("summary-active").textContent = cachedSummary.active || 0;
+                document.getElementById("summary-submitted").textContent = cachedSummary.submitted || 0;
+                document.getElementById("summary-disconnected").textContent = cachedSummary.disconnected || 0;
+                document.getElementById("summary-remaining").textContent = cachedSummary.remaining || 0;
 
-                cachedActivities.forEach(act => {
-                    const s = act.status.toLowerCase();
-                    if (s === "active" || s === "inactive") {
-                        countStarted++;
-                    } else if (s === "loggedinnotstarted") {
-                        countLoggedInNotStarted++;
-                    } else if (s === "notloggedin") {
-                        countNotLoggedIn++;
-                    } else if (s === "submitted" || s === "terminated") {
-                        countCompleted++;
-                    }
-                });
+                // Update Tab Buttons counts
+                document.getElementById("count-all").textContent = cachedSummary.eligible || 0;
+                document.getElementById("count-active").textContent = cachedSummary.active || 0;
+                document.getElementById("count-submitted").textContent = cachedSummary.submitted || 0;
+                document.getElementById("count-disconnected").textContent = cachedSummary.disconnected || 0;
+                document.getElementById("count-completed").textContent = cachedSummary.submitted || 0;
+                document.getElementById("count-remaining").textContent = cachedSummary.remaining || 0;
 
-                document.getElementById("count-all").textContent = countAll;
-                document.getElementById("count-started").textContent = countStarted;
-                document.getElementById("count-logged-in-not-started").textContent = countLoggedInNotStarted;
-                document.getElementById("count-not-logged-in").textContent = countNotLoggedIn;
-                document.getElementById("count-completed").textContent = countCompleted;
+                // Update Exam Timer Card
+                document.getElementById("timer-duration").textContent = data.timer.duration || 0;
+                document.getElementById("timer-started").textContent = data.timer.started || 'N/A';
+                document.getElementById("timer-ends").textContent = data.timer.ends || 'N/A';
+                document.getElementById("timer-remaining").textContent = data.timer.remainingString || '00:00:00';
+                
+                examRemainingSeconds = data.timer.remainingSeconds || 0;
+                examStatus = data.timer.examStatus || 'DRAFT';
 
-                // Filter based on active tab
+                if (examStatus === "COMPLETED" || examStatus === "ENDED") {
+                    document.getElementById("timer-remaining").className = "fs-3 fw-bold text-success font-monospace";
+                    document.getElementById("endExamBtn").disabled = true;
+                    document.getElementById("endExamBtn").textContent = "Ended";
+                } else {
+                    document.getElementById("timer-remaining").className = "fs-3 fw-bold text-danger font-monospace";
+                    document.getElementById("endExamBtn").disabled = false;
+                    document.getElementById("endExamBtn").innerHTML = `<i class="bi bi-slash-circle"></i> End Exam`;
+                }
+
+                // Filter table rows based on selected status tab
                 let filtered = cachedActivities;
-                if (selectedStatusFilter === "started") {
-                    filtered = cachedActivities.filter(act => act.status === "Active" || act.status === "Inactive");
-                } else if (selectedStatusFilter === "logged-in-not-started") {
-                    filtered = cachedActivities.filter(act => act.status === "LoggedInNotStarted");
-                } else if (selectedStatusFilter === "not-logged-in") {
-                    filtered = cachedActivities.filter(act => act.status === "NotLoggedIn");
+                if (selectedStatusFilter === "active") {
+                    filtered = cachedActivities.filter(act => act.connectionStatus === "Connected" && (act.status === "Ongoing" || act.status === "Active" || act.status === "Inactive"));
+                } else if (selectedStatusFilter === "submitted") {
+                    filtered = cachedActivities.filter(act => act.status === "Submitted");
+                } else if (selectedStatusFilter === "disconnected") {
+                    filtered = cachedActivities.filter(act => act.connectionStatus === "Disconnected" && (act.status === "Ongoing" || act.status === "Active" || act.status === "Inactive"));
                 } else if (selectedStatusFilter === "completed") {
-                    filtered = cachedActivities.filter(act => act.status === "Submitted" || act.status === "Terminated");
+                    filtered = cachedActivities.filter(act => act.status === "Submitted" || act.status === "Terminated" || act.status === "COMPLETED");
+                } else if (selectedStatusFilter === "remaining") {
+                    filtered = cachedActivities.filter(act => act.status === "NotLoggedIn" || act.status === "LoggedInNotStarted");
                 }
 
                 if (!filtered || filtered.length === 0) {
                     tableBody.innerHTML = `
                         <tr id="empty-state-row">
-                            <td colspan="10" class="text-center py-5">
+                            <td colspan="11" class="text-center py-5">
                                 <div class="text-muted fs-4"><i class="bi bi-people fs-1 d-block mb-3 text-secondary"></i>No students match the selected criteria.</div>
                             </td>
                         </tr>
@@ -517,17 +653,17 @@
 
                 let html = "";
                 filtered.forEach(act => {
-                    const statusClass = act.status.toLowerCase();
+                    const statusClass = act.status ? act.status.toLowerCase() : "";
                     let badgeClass = "status-terminated";
                     let pulseDotHtml = "";
-                    let displayStatus = act.status.toUpperCase();
+                    let displayStatus = act.status ? act.status.toUpperCase() : "N/A";
 
-                    if (statusClass === "active") {
+                    if (statusClass === "active" || statusClass === "ongoing") {
                         badgeClass = "status-active";
                         pulseDotHtml = `<span class="status-pulse-dot"></span>`;
                     } else if (statusClass === "inactive") {
                         badgeClass = "status-inactive";
-                    } else if (statusClass === "submitted") {
+                    } else if (statusClass === "submitted" || statusClass === "completed") {
                         badgeClass = "status-submitted";
                     } else if (statusClass === "loggedinnotstarted") {
                         badgeClass = "status-logged-in";
@@ -537,8 +673,17 @@
                         displayStatus = "OFFLINE";
                     }
 
+                    // Connection status badge class
+                    let connBadgeClass = "status-offline";
+                    let connDotHtml = "";
+                    if (act.connectionStatus === "Connected") {
+                        connBadgeClass = "status-active";
+                        connDotHtml = `<span class="status-pulse-dot"></span>`;
+                    } else if (act.connectionStatus === "Completed") {
+                        connBadgeClass = "status-submitted";
+                    }
+
                     const initials = act.studentName ? act.studentName.substring(0, 1).toUpperCase() : "S";
-                    const lastActivityFormatted = formatTime(act.lastActivity);
 
                     html += `
                         <tr id="student-${act.enrollmentNo}">
@@ -547,16 +692,15 @@
                                     <div class="profile-avatar" style="width: 38px; height: 38px; font-size: 13px; border-radius: 50% !important; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">${initials}</div>
                                     <div>
                                         <div class="fw-bold" style="color: var(--text-primary);">${act.studentName}</div>
-                                        <span class="text-muted small">Roll No: ${act.rollNo || 'N/A'} • Semester 3</span>
+                                        <span class="text-muted small">${act.semester || 'Semester 3'}</span>
                                     </div>
                                 </div>
                             </td>
                             <td class="fw-semibold text-primary">${act.enrollmentNo}</td>
                             <td class="fw-medium">${act.division || 'N/A'}</td>
-                            <td class="fw-medium text-secondary">${act.roomNo || 'N/A'}</td>
-                            <td class="fw-medium text-secondary">${act.computerNo || 'N/A'}</td>
                             <td class="fw-bold text-dark dark-text-light">${act.currentSection || 'N/A'}</td>
                             <td class="fw-bold text-dark dark-text-light">${act.currentQuestionNo || 'N/A'}</td>
+                            <td class="fw-medium font-monospace text-secondary" style="font-size: 12px;">${act.lastSaveTime || 'N/A'}</td>
                             <td class="fw-bold time-remaining-cell" data-status="${act.status}">${act.timeRemaining || 'N/A'}</td>
                             <td>
                                 <span class="status-badge-premium ${badgeClass}">
@@ -564,7 +708,21 @@
                                     <span>${displayStatus}</span>
                                 </span>
                             </td>
-                            <td class="text-meta font-monospace">${lastActivityFormatted}</td>
+                            <td class="fw-medium font-monospace text-secondary" style="font-size: 12px;">${act.loginTime || 'N/A'}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2" style="min-width: 90px;">
+                                    <div class="progress flex-grow-1" style="height: 6px; border-radius: 10px; background-color: var(--border-color);">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: ${act.progress}%" aria-valuenow="${act.progress}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <span class="fw-bold small" style="color: var(--text-primary); font-size: 11px;">${act.progress}%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge-premium ${connBadgeClass}">
+                                    ${connDotHtml}
+                                    <span>${act.connectionStatus || 'Disconnected'}</span>
+                                </span>
+                            </td>
                         </tr>
                     `;
                 });
@@ -591,25 +749,30 @@
                 }, 1000);
             }
 
-             // Bind Event Listeners for Filters
-             const searchBtn = document.getElementById("searchBtn");
- 
-             searchBtn.addEventListener("click", function() {
-                 fetchActivityData();
-                 startTimer();
-             });
- 
-             searchInput.addEventListener("keydown", function(e) {
-                 if (e.key === "Enter") {
-                     fetchActivityData();
-                     startTimer();
-                 }
-             });
- 
-             divisionSelect.addEventListener("change", function() {
-                 fetchActivityData();
-                 startTimer();
-             });
+            // Bind Event Listeners for Filters
+            const searchBtn = document.getElementById("searchBtn");
+
+            searchBtn.addEventListener("click", function() {
+                fetchActivityData();
+                startTimer();
+            });
+
+            searchInput.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    fetchActivityData();
+                    startTimer();
+                }
+            });
+
+            divisionSelect.addEventListener("change", function() {
+                fetchActivityData();
+                startTimer();
+            });
+
+            examSelect.addEventListener("change", function() {
+                fetchActivityData();
+                startTimer();
+            });
 
             // Bind status tab buttons
             tabButtons.forEach(btn => {
@@ -617,7 +780,7 @@
                     tabButtons.forEach(b => b.classList.remove("active"));
                     this.classList.add("active");
                     selectedStatusFilter = this.getAttribute("data-status");
-                    updateTable(cachedActivities);
+                    updateDashboard({ students: cachedActivities, summary: cachedSummary, timer: { duration: parseInt(document.getElementById("timer-duration").textContent), started: document.getElementById("timer-started").textContent, ends: document.getElementById("timer-ends").textContent, remainingSeconds: examRemainingSeconds, remainingString: document.getElementById("timer-remaining").textContent, examStatus: examStatus } });
                 });
             });
 
@@ -631,17 +794,69 @@
                 startTimer();
             });
 
+            // Global End Exam Button Event Handler
+            const endExamBtn = document.getElementById("endExamBtn");
+            endExamBtn.addEventListener("click", function() {
+                const selectedExam = examSelect.value;
+                if (!selectedExam || !selectedExam.includes(":")) {
+                    alert("Please select a valid examination to end.");
+                    return;
+                }
+                const parts = selectedExam.split(":");
+                const type = parts[0];
+                const examId = parts[1];
+
+                if (confirm("Are you sure you want to end this examination for all students?")) {
+                    fetch("/admin/live-monitor/end-exam", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            examId: examId,
+                            type: type
+                        })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert("Examination has been ended successfully.");
+                            fetchActivityData();
+                        } else {
+                            alert("Failed to end the examination. Please try again.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error ending exam:", error);
+                        alert("An error occurred. Please try again.");
+                    });
+                }
+            });
+
             // Start the auto-refresh loop
             fetchActivityData();
             startTimer();
 
-            // Live countdown timer execution every second
+            // Local ticking countdown for live timer (every second)
             setInterval(() => {
+                if (examRemainingSeconds > 0 && examStatus === "ACTIVE") {
+                    examRemainingSeconds--;
+                    const hrs = Math.floor(examRemainingSeconds / 3600);
+                    const mins = Math.floor((examRemainingSeconds % 3600) / 60);
+                    const secs = examRemainingSeconds % 60;
+                    const pad = (num) => String(num).padStart(2, '0');
+                    document.getElementById("timer-remaining").textContent = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+                } else if (examRemainingSeconds <= 0 && examStatus === "ACTIVE") {
+                    examStatus = "COMPLETED";
+                    document.getElementById("timer-remaining").textContent = "00:00:00";
+                    fetchActivityData();
+                }
+
+                // Decrement student-specific remaining time displays locally
                 const cells = document.querySelectorAll(".time-remaining-cell");
                 cells.forEach(cell => {
                     const status = cell.getAttribute("data-status") || "";
                     const statusLower = status.toLowerCase();
-                    if (statusLower === "active" || statusLower === "inactive") {
+                    if (statusLower === "active" || statusLower === "ongoing") {
                         const currentVal = cell.textContent.trim();
                         cell.textContent = decrementTimeString(currentVal);
                     }

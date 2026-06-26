@@ -93,6 +93,7 @@ public class LoginController {
         }
 
         // Log successful login attempt
+        System.out.println("[Student Login] Enrollment: " + trimmedEnrollment + " logged in from IP: " + ipAddress + " (Session ID: " + session.getId() + ")");
         University.exam.Entity.StudentLoginAttempt attempt = new University.exam.Entity.StudentLoginAttempt(
             trimmedEnrollment, ipAddress, browserInfo, deviceInfo, "SUCCESS"
         );
