@@ -763,7 +763,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-secondary" id="papers-table-body">
-                        <tr th:each="p : ${papers}" class="paper-row" th:attr="data-status=${p.examStatus == 'COMPLETED' ? 'ended' : #strings.toLowerCase(p.examStatus)}, data-subject=${#strings.toLowerCase(p.subject)}, data-course=${#strings.toLowerCase(p.course)}">
+                        <tr th:each="p : ${papers}" class="paper-row" th:attr="data-status=${#strings.toLowerCase(p.examStatus)}, data-subject=${#strings.toLowerCase(p.subject)}, data-course=${#strings.toLowerCase(p.course)}">
                             <td class="fw-bold" style="color: var(--text-primary) !important;">
                                 <div class="d-flex align-items-center">
                                     <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: rgba(255, 107, 0, 0.08) !important; color: #ff6b00 !important;">
@@ -813,8 +813,7 @@
                                 <div th:if="${p.examStatus == 'ACTIVE'}" class="d-inline-flex align-items-center gap-2">
                                     <div class="timer-badge-premium active-countdown-timer"
                                          th:data-paper-id="${p.id}"
-                                         th:data-activation-time="${p.activationTime != null ? #temporals.format(p.activationTime, 'yyyy-MM-dd\'T\'HH:mm:ss') + (serverTimezoneOffset != null ? serverTimezoneOffset : '+05:30') : ''}"
-                                         th:data-duration="${p.examDuration}">
+                                         th:data-remaining-seconds="${remainingSecondsMap.get(p.id)}">
                                         <i class="bi bi-stopwatch animate-pulse"></i>
                                         <span class="timer-countdown-text">--:--</span>
                                     </div>
@@ -863,192 +862,197 @@
             if (dateEl) {
                 dateEl.textContent = new Date().toLocaleDateString('en-US', options);
             }
-
-            // Live Exam HUD Initialization
+                    // Live Exam HUD Initialization
             let firstActivePaperId = null;
             const activeRows = document.querySelectorAll('.paper-row[data-status="active"]');
             const hudActiveState = document.getElementById('hud-active-state');
             const hudStandbyState = document.getElementById('hud-standby-state');
             const liveExamHud = document.getElementById('live-exam-hud');
 
-            if (liveExamHud) {
-                // Ensure HUD container is visible
-                liveExamHud.style.display = 'block';
+            try {
+                if (liveExamHud) {
+                    // Ensure HUD container is visible
+                    liveExamHud.style.display = 'block';
 
-                if (activeRows.length > 0) {
-                    const firstActive = activeRows[0];
-                    const statusCell = firstActive.querySelector('.paper-status-cell');
-                    firstActivePaperId = statusCell ? statusCell.getAttribute('data-paper-id') : null;
+                    if (activeRows.length > 0) {
+                        const firstActive = activeRows[0];
+                        const statusCell = firstActive.querySelector('.paper-status-cell');
+                        firstActivePaperId = statusCell ? statusCell.getAttribute('data-paper-id') : null;
 
-                    // Extract text content cleanly
-                    const subjectSpan = firstActive.querySelector('td:nth-child(1) span');
-                    const subject = subjectSpan ? subjectSpan.textContent : 'Exam';
-                    
-                    const courseSpan = firstActive.querySelector('td:nth-child(2) span.fw-bold');
-                    const course = courseSpan ? courseSpan.textContent : '';
-                    
-                    const semSpan = firstActive.querySelector('td:nth-child(2) span.text-muted');
-                    const semester = semSpan ? semSpan.textContent : '';
+                        // Extract text content cleanly
+                        const subjectSpan = firstActive.querySelector('td:nth-child(1) span');
+                        const subject = subjectSpan ? subjectSpan.textContent : 'Exam';
+                        
+                        const courseSpan = firstActive.querySelector('td:nth-child(2) span.fw-bold');
+                        const course = courseSpan ? courseSpan.textContent : '';
+                        
+                        const semSpan = firstActive.querySelector('td:nth-child(2) span.text-muted');
+                        const semester = semSpan ? semSpan.textContent : '';
 
-                    const eligibleSpan = firstActive.querySelector('td:nth-child(3) span span');
-                    const eligibleCount = eligibleSpan ? parseInt(eligibleSpan.textContent) || 0 : 0;
-                    
-                    const attemptsSpan = firstActive.querySelector('td:nth-child(4) span span');
-                    const attemptsCount = attemptsSpan ? parseInt(attemptsSpan.textContent) || 0 : 0;
+                        const eligibleSpan = firstActive.querySelector('td:nth-child(3) span span');
+                        const eligibleCount = eligibleSpan ? parseInt(eligibleSpan.textContent) || 0 : 0;
+                        
+                        const attemptsSpan = firstActive.querySelector('td:nth-child(4) span span');
+                        const attemptsCount = attemptsSpan ? parseInt(attemptsSpan.textContent) || 0 : 0;
 
-                    // Update HUD texts
-                    document.getElementById('hud-subject-name').textContent = subject;
-                    document.getElementById('hud-course-sem').textContent = `${course} - ${semester}`;
-                    document.getElementById('hud-submission-ratio').textContent = `${attemptsCount} / ${eligibleCount} Students`;
+                        // Update HUD texts
+                        const subjectNameEl = document.getElementById('hud-subject-name');
+                        if (subjectNameEl) subjectNameEl.textContent = subject;
 
-                    const progressPercent = eligibleCount > 0 ? Math.round((attemptsCount / eligibleCount) * 100) : 0;
-                    const progressBar = document.getElementById('hud-progress-bar');
-                    if (progressBar) {
-                        progressBar.style.width = `${progressPercent}%`;
-                        progressBar.setAttribute('aria-valuenow', progressPercent);
+                        const courseSemEl = document.getElementById('hud-course-sem');
+                        if (courseSemEl) courseSemEl.textContent = `${course} - ${semester}`;
+
+                        const ratioEl = document.getElementById('hud-submission-ratio');
+                        if (ratioEl) ratioEl.textContent = `${attemptsCount} / ${eligibleCount} Students`;
+
+                        const progressPercent = eligibleCount > 0 ? Math.round((attemptsCount / eligibleCount) * 100) : 0;
+                        const progressBar = document.getElementById('hud-progress-bar');
+                        if (progressBar) {
+                            progressBar.style.width = `${progressPercent}%`;
+                            progressBar.setAttribute('aria-valuenow', progressPercent);
+                        }
+
+                        // Show active, hide standby
+                        if (hudActiveState) hudActiveState.classList.remove('d-none');
+                        if (hudStandbyState) hudStandbyState.classList.add('d-none');
+                    } else {
+                        // Show standby, hide active
+                        if (hudActiveState) hudActiveState.classList.add('d-none');
+                        if (hudStandbyState) hudStandbyState.classList.remove('d-none');
                     }
-
-                    // Show active, hide standby
-                    if (hudActiveState) hudActiveState.classList.remove('d-none');
-                    if (hudStandbyState) hudStandbyState.classList.add('d-none');
-                } else {
-                    // Show standby, hide active
-                    if (hudActiveState) hudActiveState.classList.add('d-none');
-                    if (hudStandbyState) hudStandbyState.classList.remove('d-none');
                 }
+            } catch (err) {
+                console.error("Error initializing Live Exam HUD:", err);
             }
 
             // Real-Time Countdown Timer Engine for Active Exams
-            const activeTimers = document.querySelectorAll('.active-countdown-timer');
-            
-            activeTimers.forEach(timer => {
-                const paperId = timer.getAttribute('data-paper-id');
-                const activationTimeStr = timer.getAttribute('data-activation-time');
-                const durationMinutes = parseInt(timer.getAttribute('data-duration')) || 0;
-                const textSpan = timer.querySelector('.timer-countdown-text');
-                const icon = timer.querySelector('i');
+            try {
+                const activeTimers = document.querySelectorAll('.active-countdown-timer');
+                
+                activeTimers.forEach(timer => {
+                    const paperId = timer.getAttribute('data-paper-id');
+                    let remainingSecs = parseInt(timer.getAttribute('data-remaining-seconds')) || 0;
+                    const textSpan = timer.querySelector('.timer-countdown-text');
+                    const icon = timer.querySelector('i');
 
-                if (!activationTimeStr || durationMinutes <= 0) {
-                    textSpan.textContent = "Expired";
-                    return;
-                }
-
-                let cleanTimeStr = activationTimeStr.replace(' ', 'T');
-                if (!cleanTimeStr.includes('Z') && !cleanTimeStr.includes('+') && !cleanTimeStr.includes('-')) {
-                    cleanTimeStr += 'Z';
-                }
-                const startTime = new Date(cleanTimeStr).getTime();
-                const durationMs = durationMinutes * 60 * 1000;
-                const endTime = startTime + durationMs;
-
-                function updateCountdown() {
-                    const now = new Date().getTime();
-                    const remainingMs = endTime - now;
-
-                    if (remainingMs <= 0) {
-                        textSpan.textContent = "00m 00s";
-                        timer.className = "d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border text-danger bg-danger bg-opacity-10 border-danger border-opacity-20";
-                        if (icon) {
-                            icon.className = "bi bi-stopwatch-fill text-danger";
-                        }
-                        
-                        // Auto-terminate the exam on server asynchronously
-                        fetch(`/admin/paper/${paperId}/end`)
-                            .then(response => response.text())
-                            .then(data => {
-                                console.log(`Paper ${paperId} automatically terminated:`, data);
-                            })
-                            .catch(err => console.error("Error auto-terminating paper:", err));
-
-                        // Change Action column to Ended label
-                        const actionCell = document.querySelector(`.paper-action-cell[data-paper-id="${paperId}"]`);
-                        if (actionCell) {
-                            actionCell.innerHTML = `<span class="text-danger fw-bold small d-inline-flex align-items-center gap-1.5"><i class="bi bi-check-circle-fill"></i> Ended</span>`;
-                        }
-
-                        // Change Status badge to ENDED (Red)
-                        const statusCell = document.querySelector(`.paper-status-cell[data-paper-id="${paperId}"]`);
-                        if (statusCell) {
-                            statusCell.innerHTML = `<span class="status-badge-premium status-ended"><span class="status-dot"></span> ENDED</span>`;
-                        }
-
-                        // Switch HUD state to standby if it was the active paper
-                        if (paperId === firstActivePaperId) {
-                            if (hudActiveState) hudActiveState.classList.add('d-none');
-                            if (hudStandbyState) hudStandbyState.classList.remove('d-none');
-                        }
-
-                        clearInterval(timerInterval);
+                    if (remainingSecs <= 0) {
+                        if (textSpan) textSpan.textContent = "Expired";
                         return;
                     }
 
-                    const totalSecs = Math.floor(remainingMs / 1000);
-                    const hours = Math.floor(totalSecs / 3600);
-                    const mins = Math.floor((totalSecs % 3600) / 60);
-                    const secs = totalSecs % 60;
+                    function updateCountdown() {
+                        if (remainingSecs <= 0) {
+                            if (textSpan) textSpan.textContent = "00m 00s";
+                            timer.className = "d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border text-danger bg-danger bg-opacity-10 border-danger border-opacity-20";
+                            if (icon) {
+                                icon.className = "bi bi-stopwatch-fill text-danger";
+                            }
+                            
+                            // Auto-terminate the exam on server asynchronously
+                            fetch(`/admin/paper/${paperId}/end`)
+                                .then(response => response.text())
+                                .then(data => {
+                                    console.log(`Paper ${paperId} automatically terminated:`, data);
+                                })
+                                .catch(err => console.error("Error auto-terminating paper:", err));
 
-                    let displayStr = "";
-                    if (hours > 0) {
-                        displayStr += `${hours}h ${mins}m ${secs}s`;
-                    } else {
-                        displayStr += `${mins}m ${secs}s`;
-                    }
+                            // Change Action column to Ended label
+                            const actionCell = document.querySelector(`.paper-action-cell[data-paper-id="${paperId}"]`);
+                            if (actionCell) {
+                                actionCell.innerHTML = `<span class="text-danger fw-bold small d-inline-flex align-items-center gap-1.5"><i class="bi bi-check-circle-fill"></i> Ended</span>`;
+                            }
 
-                    textSpan.textContent = displayStr;
+                            // Change Status badge to ENDED (Red)
+                            const statusCell = document.querySelector(`.paper-status-cell[data-paper-id="${paperId}"]`);
+                            if (statusCell) {
+                                statusCell.innerHTML = `<span class="status-badge-premium status-ended"><span class="status-dot"></span> ENDED</span>`;
+                            }
 
-                    // Update HUD clock string in real-time
-                    if (paperId === firstActivePaperId) {
-                        const hudTimerText = document.getElementById('hud-timer-text');
-                        if (hudTimerText) {
-                            hudTimerText.textContent = displayStr;
+                            // Switch HUD state to standby if it was the active paper
+                            if (paperId === firstActivePaperId) {
+                                if (hudActiveState) hudActiveState.classList.add('d-none');
+                                if (hudStandbyState) hudStandbyState.classList.remove('d-none');
+                            }
+
+                            clearInterval(timerInterval);
+                            return;
                         }
+
+                        const hours = Math.floor(remainingSecs / 3600);
+                        const mins = Math.floor((remainingSecs % 3600) / 60);
+                        const secs = remainingSecs % 60;
+
+                        let displayStr = "";
+                        if (hours > 0) {
+                            displayStr += `${hours}h ${mins}m ${secs}s`;
+                        } else {
+                            displayStr += `${mins}m ${secs}s`;
+                        }
+
+                        if (textSpan) textSpan.textContent = displayStr;
+
+                        // Update HUD clock string in real-time
+                        if (paperId === firstActivePaperId) {
+                            const hudTimerText = document.getElementById('hud-timer-text');
+                            if (hudTimerText) {
+                                hudTimerText.textContent = displayStr;
+                            }
+                        }
+
+                        // Urgent Warning: Less than 5 minutes remaining
+                        if (remainingSecs < 5 * 60) {
+                            timer.className = "timer-badge-premium d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border text-danger bg-danger bg-opacity-10 border-danger border-opacity-20";
+                            if (icon) icon.className = "bi bi-stopwatch animate-pulse text-danger";
+                        }
+
+                        remainingSecs--;
                     }
 
-                    // Urgent Warning: Less than 5 minutes remaining
-                    if (remainingMs < 5 * 60 * 1000) {
-                        timer.className = "timer-badge-premium d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border text-danger bg-danger bg-opacity-10 border-danger border-opacity-20";
-                        if (icon) icon.className = "bi bi-stopwatch animate-pulse text-danger";
-                    }
-                }
-
-                // Initial run
-                updateCountdown();
-                // Tick every second
-                const timerInterval = setInterval(updateCountdown, 1000);
-            });
+                    // Initial run
+                    updateCountdown();
+                    // Tick every second
+                    const timerInterval = setInterval(updateCountdown, 1000);
+                });
+            } catch (err) {
+                console.error("Error initializing Countdown Timers:", err);
+            }
 
             // End Exam from Dashboard with confirmation and AJAX
-            const endExamBtns = document.querySelectorAll('.end-exam-btn-dashboard');
-            endExamBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const paperId = this.getAttribute('data-paper-id');
-                    if (confirm("Are you sure you want to end this examination for all students?")) {
-                        fetch('/admin/live-monitor/end-exam', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                examId: paperId,
-                                type: 'paper'
+            try {
+                const endExamBtns = document.querySelectorAll('.end-exam-btn-dashboard');
+                endExamBtns.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const paperId = this.getAttribute('data-paper-id');
+                        if (confirm("Are you sure you want to end this examination for all students?")) {
+                            fetch('/admin/live-monitor/end-exam', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    examId: paperId,
+                                    type: 'paper'
+                                })
                             })
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                alert("Examination has been ended successfully.");
-                                window.location.reload();
-                            } else {
-                                alert("Failed to end the examination. Please try again.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error ending exam:", error);
-                            alert("An error occurred. Please try again.");
-                        });
-                    }
+                            .then(response => {
+                                if (response.ok) {
+                                    alert("Examination has been ended successfully.");
+                                    window.location.reload();
+                                } else {
+                                    alert("Failed to end the examination. Please try again.");
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Error ending exam:", error);
+                                alert("An error occurred. Please try again.");
+                            });
+                        }
+                    });
                 });
-            });
+            } catch (err) {
+                console.error("Error setting up End Exam button listeners:", err);
+            }
 
             // Search and Status Filtering for Exam Control Center
             const searchInput = document.getElementById('paper-search-input');
@@ -1060,52 +1064,62 @@
             let searchQuery = '';
 
             function applyFilters() {
-                let visibleCount = 0;
-                
-                paperRows.forEach(row => {
-                    const status = row.getAttribute('data-status') || '';
-                    const subject = row.getAttribute('data-subject') || '';
-                    const course = row.getAttribute('data-course') || '';
+                try {
+                    let visibleCount = 0;
+                    
+                    paperRows.forEach(row => {
+                        const status = row.getAttribute('data-status') || '';
+                        const subject = row.getAttribute('data-subject') || '';
+                        const course = row.getAttribute('data-course') || '';
 
-                    const matchesFilter = (currentFilter === 'all' || status === currentFilter);
-                    const matchesSearch = (subject.includes(searchQuery) || course.includes(searchQuery));
+                        const matchesFilter = (currentFilter === 'all' || 
+                                               status === currentFilter ||
+                                               (currentFilter === 'ended' && status === 'completed'));
+                        const matchesSearch = (subject.includes(searchQuery) || course.includes(searchQuery));
 
-                    if (matchesFilter && matchesSearch) {
-                        row.style.display = '';
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
+                        if (matchesFilter && matchesSearch) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    if (noSearchResultsRow) {
+                        if (paperRows.length > 0 && visibleCount === 0) {
+                            noSearchResultsRow.style.display = '';
+                        } else {
+                            noSearchResultsRow.style.display = 'none';
+                        }
                     }
-                });
-
-                if (noSearchResultsRow) {
-                    if (paperRows.length > 0 && visibleCount === 0) {
-                        noSearchResultsRow.style.display = '';
-                    } else {
-                        noSearchResultsRow.style.display = 'none';
-                    }
+                } catch (err) {
+                    console.error("Error applying filters:", err);
                 }
             }
 
-            if (searchInput) {
-                searchInput.addEventListener('input', function(e) {
-                    searchQuery = e.target.value.toLowerCase().trim();
-                    applyFilters();
-                });
-            }
-
-            filterTabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    filterTabs.forEach(t => {
-                        t.classList.remove('active');
-                        t.classList.add('text-muted');
+            try {
+                if (searchInput) {
+                    searchInput.addEventListener('input', function(e) {
+                        searchQuery = e.target.value.toLowerCase().trim();
+                        applyFilters();
                     });
-                    this.classList.add('active');
-                    this.classList.remove('text-muted');
-                    currentFilter = this.getAttribute('data-filter');
-                    applyFilters();
+                }
+
+                filterTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        filterTabs.forEach(t => {
+                            t.classList.remove('active');
+                            t.classList.add('text-muted');
+                        });
+                        this.classList.add('active');
+                        this.classList.remove('text-muted');
+                        currentFilter = this.getAttribute('data-filter');
+                        applyFilters();
+                    });
                 });
-            });
+            } catch (err) {
+                console.error("Error setting up Filter Tabs listeners:", err);
+            }
 
             // Drag and Drop Zone Engine
             const dragZone = document.getElementById('drag-drop-zone');
