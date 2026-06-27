@@ -107,7 +107,7 @@ public class ActiveSessionInterceptor implements HandlerInterceptor {
                     LocalDateTime lastAct = activeSession.getLastActivity();
                     if (lastAct != null) {
                         long gap = java.time.Duration.between(lastAct, LocalDateTime.now()).getSeconds();
-                        if (gap > 15) {
+                        if (gap > 300) {
                             if (ongoingAttempt != null) {
                                 ongoingAttempt.setIsPaused(true);
                                 ongoingAttempt.setPausedAt(lastAct);
@@ -150,24 +150,15 @@ public class ActiveSessionInterceptor implements HandlerInterceptor {
 
         if (activeSessionOpt.isPresent()) {
             StudentActiveSession activeSession = activeSessionOpt.get();
-            // If the registered session ID does not match the current HTTP session, block the request
+            // If the registered session ID does not match the current HTTP session, update it in the database
+            // rather than invalidating the HTTP session to handle session ID regeneration securely
             if (!activeSession.getSessionId().equals(session.getId())) {
-                // Invalidate current HTTP session
-                session.invalidate();
-                
-                if (uri != null && uri.contains("/api/")) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\": \"already_logged_in\", \"message\": \"This student account is already active on another device.\"}");
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/?error=already_logged_in");
-                }
-                return false;
-            } else {
-                // Session matches: update last activity timestamp
-                activeSession.setLastActivity(LocalDateTime.now());
-                studentActiveSessionRepository.save(activeSession);
+                System.out.println("ActiveSessionInterceptor: Session ID updated from " + activeSession.getSessionId() + " to " + session.getId() + " for student " + enrollmentNo);
+                activeSession.setSessionId(session.getId());
             }
+            // Update last activity timestamp and save
+            activeSession.setLastActivity(LocalDateTime.now());
+            studentActiveSessionRepository.save(activeSession);
         } else {
             // No active session record exists in the database for this student:
             // Clean up any existing session record with the same session ID to prevent unique constraint violation

@@ -167,6 +167,7 @@ public class StudentExamController {
                     newAttempt.setExam(exam);
                     newAttempt.setStartTime(LocalDateTime.now());
                     newAttempt.setStatus("Ongoing");
+                    System.out.println("[Exam Start] Student: " + enrollmentNo + " started Exam ID: " + id + " (" + exam.getExamName() + ")");
                     return examAttemptRepository.save(newAttempt);
                 });
 
@@ -332,6 +333,7 @@ public class StudentExamController {
                     s.setPaper(paper);
                     s.setSubmittedAt(LocalDateTime.now()); // Acts as startTime here
                     s.setStatus("Ongoing");
+                    System.out.println("[Exam Start] Student: " + enrollmentNo + " started Paper ID: " + id + " (" + paper.getSubject() + ")");
                     return submissionRepository.save(s);
                 });
 

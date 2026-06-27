@@ -36,6 +36,9 @@ public class Paper {
     @jakarta.persistence.Column(name = "activated_time")
     private LocalDateTime activatedTime;
 
+    @jakarta.persistence.Column(name = "end_time")
+    private LocalDateTime endTime;
+
     @jakarta.persistence.Column(name = "manual_content", columnDefinition = "TEXT")
     private String manualContent;
 
@@ -84,6 +87,9 @@ public class Paper {
     public void setPublishedTime(LocalDateTime publishedTime) { this.publishedTime = publishedTime; }
     public LocalDateTime getActivatedTime() { return activatedTime; }
     public void setActivatedTime(LocalDateTime activatedTime) { this.activatedTime = activatedTime; }
+
+    public LocalDateTime getEndTime() { return endTime; }
+    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
 
     @jakarta.persistence.Column(name = "exam_date")
     private java.time.LocalDate examDate;

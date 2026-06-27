@@ -821,6 +821,28 @@
         } catch (e) { alert("Error."); }
     }
 
+    // Check exam status every 5 seconds. If the exam status changes to COMPLETED or ENDED, auto-submit
+    const examIdVal = document.getElementById('examId') ? document.getElementById('examId').value : null;
+    if (examIdVal) {
+        setInterval(async function() {
+            if (window.isNavigating) return;
+            try {
+                const response = await fetch(`/api/exam/${examIdVal}/status?type=${type}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'COMPLETED' || data.status === 'ENDED') {
+                        window.isNavigating = true;
+                        document.querySelectorAll('.answer-area').forEach(ta => ta.disabled = true);
+                        alert("The examination has been ended by the administrator.");
+                        await submitExam();
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to check exam status", e);
+            }
+        }, 5000);
+    }
+
     // PROCTORING DETECTION & VIOLATION HANDLING
     let warningCount = 0;
     if (sessionStorage.getItem("examWarningCount")) {

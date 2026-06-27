@@ -30,7 +30,13 @@ public class Exam {
     @Column(name = "activated_time")
     private java.time.LocalDateTime activatedTime;
 
+    @Column(name = "end_time")
+    private java.time.LocalDateTime endTime;
+
     public Exam() {}
+
+    public java.time.LocalDateTime getEndTime() { return endTime; }
+    public void setEndTime(java.time.LocalDateTime endTime) { this.endTime = endTime; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

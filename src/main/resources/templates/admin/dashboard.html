@@ -812,11 +812,17 @@
                                 <!-- Show Countdown Timer and End Exam button if ACTIVE -->
                                 <div th:if="${p.examStatus == 'ACTIVE'}" class="d-inline-flex align-items-center gap-2">
                                     <div class="timer-badge-premium active-countdown-timer"
-                                         th:attr="data-paper-id=${p.id}, data-activation-time=${p.activationTime != null ? p.activationTime.atZone(T(java.time.ZoneId).of('Asia/Kolkata')).toInstant() : ''}, data-duration=${p.examDuration}">
+                                         th:data-paper-id="${p.id}"
+                                         th:data-activation-time="${p.activationTime != null ? #temporals.format(p.activationTime, 'yyyy-MM-dd\'T\'HH:mm:ss') + '+05:30' : ''}"
+                                         th:data-duration="${p.examDuration}">
                                         <i class="bi bi-stopwatch animate-pulse"></i>
                                         <span class="timer-countdown-text">--:--</span>
                                     </div>
-                                    <a th:href="@{'/admin/paper/' + ${p.id} + '/end-dashboard'}" class="btn btn-sm btn-outline-danger rounded-pill fw-bold px-3 py-1.5" style="font-size: 11px; display: inline-flex; align-items: center; gap: 4px;"><i class="bi bi-stop-fill"></i> End Exam</a>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill fw-bold px-3 py-1.5 end-exam-btn-dashboard"
+                                            th:data-paper-id="${p.id}"
+                                            style="font-size: 11px; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="bi bi-stop-fill"></i> End Exam
+                                    </button>
                                 </div>
 
                                 <!-- Show Ended label if ENDED -->
@@ -1009,6 +1015,39 @@
                 updateCountdown();
                 // Tick every second
                 const timerInterval = setInterval(updateCountdown, 1000);
+            });
+
+            // End Exam from Dashboard with confirmation and AJAX
+            const endExamBtns = document.querySelectorAll('.end-exam-btn-dashboard');
+            endExamBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const paperId = this.getAttribute('data-paper-id');
+                    if (confirm("Are you sure you want to end this examination for all students?")) {
+                        fetch('/admin/live-monitor/end-exam', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                examId: paperId,
+                                type: 'paper'
+                            })
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                alert("Examination has been ended successfully.");
+                                window.location.reload();
+                            } else {
+                                alert("Failed to end the examination. Please try again.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error ending exam:", error);
+                            alert("An error occurred. Please try again.");
+                        });
+                    }
+                });
             });
 
             // Search and Status Filtering for Exam Control Center
