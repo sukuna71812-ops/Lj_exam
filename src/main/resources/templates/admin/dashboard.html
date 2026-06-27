@@ -763,7 +763,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-secondary" id="papers-table-body">
-                        <tr th:each="p : ${papers}" class="paper-row" th:attr="data-status=${#strings.toLowerCase(p.examStatus)}, data-subject=${#strings.toLowerCase(p.subject)}, data-course=${#strings.toLowerCase(p.course)}">
+                        <tr th:each="p : ${papers}" class="paper-row" th:attr="data-status=${p.examStatus == 'COMPLETED' ? 'ended' : #strings.toLowerCase(p.examStatus)}, data-subject=${#strings.toLowerCase(p.subject)}, data-course=${#strings.toLowerCase(p.course)}">
                             <td class="fw-bold" style="color: var(--text-primary) !important;">
                                 <div class="d-flex align-items-center">
                                     <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: rgba(255, 107, 0, 0.08) !important; color: #ff6b00 !important;">
@@ -803,7 +803,7 @@
                                 <span th:if="${p.examStatus == 'DRAFT'}" class="status-badge-premium status-draft"><span class="status-dot"></span> DRAFT</span>
                                 <span th:if="${p.examStatus == 'PUBLISHED'}" class="status-badge-premium status-published"><span class="status-dot"></span> PUBLISHED</span>
                                 <span th:if="${p.examStatus == 'ACTIVE'}" class="status-badge-premium status-active"><span class="status-pulse-dot"></span> ACTIVE</span>
-                                <span th:if="${p.examStatus == 'ENDED'}" class="status-badge-premium status-ended"><span class="status-dot"></span> ENDED</span>
+                                <span th:if="${p.examStatus == 'ENDED' or p.examStatus == 'COMPLETED'}" class="status-badge-premium status-ended"><span class="status-dot"></span> ENDED</span>
                             </td>
                             <td class="text-end paper-action-cell" th:attr="data-paper-id=${p.id}">
                                 <!-- Show Activate Exam button ONLY if paper is DRAFT or PUBLISHED -->
@@ -813,7 +813,7 @@
                                 <div th:if="${p.examStatus == 'ACTIVE'}" class="d-inline-flex align-items-center gap-2">
                                     <div class="timer-badge-premium active-countdown-timer"
                                          th:data-paper-id="${p.id}"
-                                         th:data-activation-time="${p.activationTime != null ? #temporals.format(p.activationTime, 'yyyy-MM-dd\'T\'HH:mm:ss') + '+05:30' : ''}"
+                                         th:data-activation-time="${p.activationTime != null ? #temporals.format(p.activationTime, 'yyyy-MM-dd\'T\'HH:mm:ss') + (serverTimezoneOffset != null ? serverTimezoneOffset : '+05:30') : ''}"
                                          th:data-duration="${p.examDuration}">
                                         <i class="bi bi-stopwatch animate-pulse"></i>
                                         <span class="timer-countdown-text">--:--</span>
@@ -825,8 +825,8 @@
                                     </button>
                                 </div>
 
-                                <!-- Show Ended label if ENDED -->
-                                <span th:if="${p.examStatus == 'ENDED'}" class="text-danger fw-bold small d-inline-flex align-items-center gap-1.5"><i class="bi bi-check-circle-fill"></i> Ended</span>
+                                <!-- Show Ended label if ENDED or COMPLETED -->
+                                <span th:if="${p.examStatus == 'ENDED' or p.examStatus == 'COMPLETED'}" class="text-danger fw-bold small d-inline-flex align-items-center gap-1.5"><i class="bi bi-check-circle-fill"></i> Ended</span>
                             </td>
                         </tr>
                         <tr th:if="${papers == null or papers.isEmpty()}" id="no-papers-row">

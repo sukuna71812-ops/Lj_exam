@@ -96,6 +96,10 @@ public class AdminDashboardController {
         String adminName = (String) session.getAttribute("loggedInAdmin");
         model.addAttribute("adminName", adminName != null ? adminName : "Super Admin");
         model.addAttribute("logoUrl", "/images/logo.png");
+        
+        java.time.ZoneOffset offset = java.time.OffsetDateTime.now().getOffset();
+        String offsetId = offset.getId();
+        model.addAttribute("serverTimezoneOffset", offsetId);
     }
 
     private Admin getLoggedInAdmin(HttpSession session) {
