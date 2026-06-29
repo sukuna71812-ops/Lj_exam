@@ -330,37 +330,7 @@
             </div>
         </header>
 
-        <!-- Premium Exam Timer Card -->
-        <div class="card border-0 p-4 shadow-sm rounded-4 mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-            <div class="row align-items-center">
-                <div class="col-lg-8 col-md-7">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="bg-primary text-white rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: var(--primary-gradient) !important;">
-                            <i class="bi bi-alarm-fill fs-3"></i>
-                        </div>
-                        <div>
-                            <h3 class="h5 mb-0 fw-bold" style="color: var(--text-primary);">Exam Countdown Timer</h3>
-                            <div class="text-muted small">
-                                Exam Duration: <span id="timer-duration" class="fw-bold text-dark dark-text-light">0</span> Minutes | 
-                                Started: <span id="timer-started" class="fw-semibold text-secondary">N/A</span> | 
-                                Ends: <span id="timer-ends" class="fw-semibold text-secondary">N/A</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-5 text-md-end mt-3 mt-md-0 d-flex justify-content-md-end align-items-center gap-4">
-                    <div class="text-start pe-4 border-end" style="border-color: var(--border-color) !important;">
-                        <div class="text-muted small fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">REMAINING TIME</div>
-                        <div class="fs-3 fw-bold text-danger font-monospace" id="timer-remaining">00:00:00</div>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-danger fw-bold d-flex align-items-center gap-2" id="endExamBtn" style="border-radius: 12px; padding: 0.65rem 1.5rem; background-color: #ef4444; border-color: #ef4444;">
-                            <i class="bi bi-slash-circle"></i> End Exam
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Dashboard Summary Stats Grid -->
         <div class="row g-3 mb-4">
@@ -608,22 +578,32 @@
                 document.getElementById("count-remaining").textContent = cachedSummary.remaining || 0;
 
                 // Update Exam Timer Card
-                document.getElementById("timer-duration").textContent = data.timer.duration || 0;
-                document.getElementById("timer-started").textContent = data.timer.started || 'N/A';
-                document.getElementById("timer-ends").textContent = data.timer.ends || 'N/A';
-                document.getElementById("timer-remaining").textContent = data.timer.remainingString || '00:00:00';
+                const timerDuration = document.getElementById("timer-duration");
+                if (timerDuration) timerDuration.textContent = data.timer.duration || 0;
+                
+                const timerStarted = document.getElementById("timer-started");
+                if (timerStarted) timerStarted.textContent = data.timer.started || 'N/A';
+                
+                const timerEnds = document.getElementById("timer-ends");
+                if (timerEnds) timerEnds.textContent = data.timer.ends || 'N/A';
+                
+                const timerRemaining = document.getElementById("timer-remaining");
+                if (timerRemaining) timerRemaining.textContent = data.timer.remainingString || '00:00:00';
                 
                 examRemainingSeconds = data.timer.remainingSeconds || 0;
                 examStatus = data.timer.examStatus || 'DRAFT';
 
-                if (examStatus === "COMPLETED" || examStatus === "ENDED") {
-                    document.getElementById("timer-remaining").className = "fs-3 fw-bold text-success font-monospace";
-                    document.getElementById("endExamBtn").disabled = true;
-                    document.getElementById("endExamBtn").textContent = "Ended";
-                } else {
-                    document.getElementById("timer-remaining").className = "fs-3 fw-bold text-danger font-monospace";
-                    document.getElementById("endExamBtn").disabled = false;
-                    document.getElementById("endExamBtn").innerHTML = `<i class="bi bi-slash-circle"></i> End Exam`;
+                const endExamBtn = document.getElementById("endExamBtn");
+                if (endExamBtn) {
+                    if (examStatus === "COMPLETED" || examStatus === "ENDED") {
+                        if (timerRemaining) timerRemaining.className = "fs-3 fw-bold text-success font-monospace";
+                        endExamBtn.disabled = true;
+                        endExamBtn.textContent = "Ended";
+                    } else {
+                        if (timerRemaining) timerRemaining.className = "fs-3 fw-bold text-danger font-monospace";
+                        endExamBtn.disabled = false;
+                        endExamBtn.innerHTML = `<i class="bi bi-slash-circle"></i> End Exam`;
+                    }
                 }
 
                 // Filter table rows based on selected status tab
@@ -780,7 +760,24 @@
                     tabButtons.forEach(b => b.classList.remove("active"));
                     this.classList.add("active");
                     selectedStatusFilter = this.getAttribute("data-status");
-                    updateDashboard({ students: cachedActivities, summary: cachedSummary, timer: { duration: parseInt(document.getElementById("timer-duration").textContent), started: document.getElementById("timer-started").textContent, ends: document.getElementById("timer-ends").textContent, remainingSeconds: examRemainingSeconds, remainingString: document.getElementById("timer-remaining").textContent, examStatus: examStatus } });
+                    
+                    const durationElem = document.getElementById("timer-duration");
+                    const startedElem = document.getElementById("timer-started");
+                    const endsElem = document.getElementById("timer-ends");
+                    const remainingElem = document.getElementById("timer-remaining");
+                    
+                    updateDashboard({
+                        students: cachedActivities,
+                        summary: cachedSummary,
+                        timer: {
+                            duration: durationElem ? parseInt(durationElem.textContent) : 0,
+                            started: startedElem ? startedElem.textContent : 'N/A',
+                            ends: endsElem ? endsElem.textContent : 'N/A',
+                            remainingSeconds: examRemainingSeconds,
+                            remainingString: remainingElem ? remainingElem.textContent : '00:00:00',
+                            examStatus: examStatus
+                        }
+                    });
                 });
             });
 
@@ -796,41 +793,43 @@
 
             // Global End Exam Button Event Handler
             const endExamBtn = document.getElementById("endExamBtn");
-            endExamBtn.addEventListener("click", function() {
-                const selectedExam = examSelect.value;
-                if (!selectedExam || !selectedExam.includes(":")) {
-                    alert("Please select a valid examination to end.");
-                    return;
-                }
-                const parts = selectedExam.split(":");
-                const type = parts[0];
-                const examId = parts[1];
+            if (endExamBtn) {
+                endExamBtn.addEventListener("click", function() {
+                    const selectedExam = examSelect.value;
+                    if (!selectedExam || !selectedExam.includes(":")) {
+                        alert("Please select a valid examination to end.");
+                        return;
+                    }
+                    const parts = selectedExam.split(":");
+                    const type = parts[0];
+                    const examId = parts[1];
 
-                if (confirm("Are you sure you want to end this examination for all students?")) {
-                    fetch("/admin/live-monitor/end-exam", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            examId: examId,
-                            type: type
+                    if (confirm("Are you sure you want to end this examination for all students?")) {
+                        fetch("/admin/live-monitor/end-exam", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                examId: examId,
+                                type: type
+                            })
                         })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            alert("Examination has been ended successfully.");
-                            fetchActivityData();
-                        } else {
-                            alert("Failed to end the examination. Please try again.");
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error ending exam:", error);
-                        alert("An error occurred. Please try again.");
-                    });
-                }
-            });
+                        .then(response => {
+                            if (response.ok) {
+                                alert("Examination has been ended successfully.");
+                                fetchActivityData();
+                            } else {
+                                alert("Failed to end the examination. Please try again.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error ending exam:", error);
+                            alert("An error occurred. Please try again.");
+                        });
+                    }
+                });
+            }
 
             // Start the auto-refresh loop
             fetchActivityData();
@@ -838,16 +837,17 @@
 
             // Local ticking countdown for live timer (every second)
             setInterval(() => {
+                const timerRemaining = document.getElementById("timer-remaining");
                 if (examRemainingSeconds > 0 && examStatus === "ACTIVE") {
                     examRemainingSeconds--;
                     const hrs = Math.floor(examRemainingSeconds / 3600);
                     const mins = Math.floor((examRemainingSeconds % 3600) / 60);
                     const secs = examRemainingSeconds % 60;
                     const pad = (num) => String(num).padStart(2, '0');
-                    document.getElementById("timer-remaining").textContent = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+                    if (timerRemaining) timerRemaining.textContent = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
                 } else if (examRemainingSeconds <= 0 && examStatus === "ACTIVE") {
                     examStatus = "COMPLETED";
-                    document.getElementById("timer-remaining").textContent = "00:00:00";
+                    if (timerRemaining) timerRemaining.textContent = "00:00:00";
                     fetchActivityData();
                 }
 

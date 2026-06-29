@@ -83,6 +83,6 @@ public class ExamApplication {
 		} else {
 			System.out.println("No DATABASE_URL or PG* environment variables found. Falling back to local configuration.");
 		}
-	}
-  
-}                                                                                                         
+	}     
+        
+}                                                                                                             

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History & Records - Admin Dashboard</title>
+    <!-- Bootstrap CSS, Icons, and Google Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem("theme") || "light";
+            if (savedTheme === "dark") {
+                document.documentElement.classList.add("dark-theme");
+            }
+        })();
+    </script>
+    
+    <style>
+        :root {
+            --primary: #ff6b00;
+            --primary-hover: #ea580c;
+            --primary-light: rgba(255, 107, 0, 0.05);
+            --primary-gradient: linear-gradient(135deg, #ff8a3d 0%, #ff6b00 100%);
+            --bg-canvas: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: rgba(0, 0, 0, 0.05);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --sidebar-width: 260px;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+            --card-shadow-hover: 0 12px 20px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        body.dark-theme {
+            --bg-canvas: #090d16;
+            --card-bg: rgba(17, 24, 39, 0.85);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --card-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
+            --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.4), 0 1px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif !important;
+            font-size: 14px;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6, .brand-name, .profile-name, .btn, thead th, .status-badge-premium {
+            font-family: 'Outfit', sans-serif !important;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2.5rem;
+            transition: var(--transition-smooth);
+            background-color: var(--bg-canvas);
+        }
+
+        .stat-card {
+            border: 1px solid var(--border-color) !important;
+            border-radius: 20px !important;
+            box-shadow: var(--card-shadow) !important;
+            transition: var(--transition-smooth);
+            background: var(--card-bg);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover) !important;
+            border-color: rgba(255, 107, 0, 0.2) !important;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: transparent;
+            transition: var(--transition-smooth);
+        }
+        
+        .stat-card.stat-orange:hover::after { background: var(--primary); }
+        .stat-card.stat-green:hover::after { background: var(--success); }
+        .stat-card.stat-amber:hover::after { background: var(--warning); }
+        .stat-card.stat-purple:hover::after { background: var(--purple); }
+        .stat-card.stat-danger:hover::after { background: var(--danger); }
+
+        .icon-box-saas {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover .icon-box-saas {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 15px;
+            padding: 10px 20px;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .sticky-thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: var(--card-bg) !important;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+        
+        .status-scheduled { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+        .status-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-completed { background: rgba(100, 116, 139, 0.1); color: var(--text-muted); }
+
+        .result-pass { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .result-fail { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .result-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            border-radius: 16px;
+            backdrop-filter: blur(4px);
+        }
+        body.dark-theme .loading-overlay {
+            background: rgba(9, 13, 22, 0.7);
+        }
+
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+        }
+
+        @media (max-width: 991.98px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Include Sidebar Fragment -->
+    <div th:replace="~{admin/fragments :: sidebar(activeMenu='history-records')}"></div>
+
+    <main class="main-content">
+        <!-- Brand / Title Header -->
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: var(--text-primary);">📚 History & Records</h2>
+                <p class="text-muted mb-0">Search, filter, analyze, and export historical exam sessions and students' results.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary p-2 rounded-3 text-uppercase" th:text="${adminName}">admin</span>
+            </div>
+        </div>
+
+        <!-- DASHBOARD SUMMARY CARDS -->
+        <div class="row g-3 mb-4">
+            <!-- Card 1: Total Exams Conducted -->
+            <div class="col-6 col-lg-3">
+                <div class="card stat-card stat-orange p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">Total Exams Conducted</span>
+                            <h3 class="fw-extrabold mb-0" style="color: var(--text-primary);" th:text="${totalExamsConducted}">0</h3>
+                        </div>
+                        <div class="icon-box-saas bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-journal-check fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Total Uploaded Papers -->
+            <div class="col-6 col-lg-3">
+                <div class="card stat-card stat-purple p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">Total Uploaded Papers</span>
+                            <h3 class="fw-extrabold mb-0" style="color: var(--text-primary);" th:text="${totalUploadedPapers}">0</h3>
+                        </div>
+                        <div class="icon-box-saas bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-cloud-upload fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Total Students Appeared -->
+            <div class="col-6 col-lg-3">
+                <div class="card stat-card stat-amber p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">Students Appeared</span>
+                            <h3 class="fw-extrabold mb-0" style="color: var(--text-primary);" th:text="${totalStudentsAppeared}">0</h3>
+                        </div>
+                        <div class="icon-box-saas bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-people fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Pass / Fail Statistics -->
+            <div class="col-6 col-lg-3">
+                <div class="card stat-card stat-green p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">Pass Ratio (Passed/Failed)</span>
+                            <h3 class="fw-extrabold mb-0" style="color: var(--text-primary);">
+                                <span th:text="${totalStudentsPassed}">0</span> / <span th:text="${totalStudentsFailed}">0</span>
+                                <small class="text-success" style="font-size: 12px; font-weight: 600;" th:text="'(' + ${passPercentage} + '%)'"></small>
+                            </h3>
+                        </div>
+                        <div class="icon-box-saas bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-emoji-smile fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 5: Highest / Average Marks -->
+            <div class="col-12 col-lg-6 mt-3">
+                <div class="card stat-card p-3 h-100">
+                    <div class="row align-items-center g-2 text-center text-md-start">
+                        <div class="col-6 border-end" style="border-color: var(--border-color) !important;">
+                            <span class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">Highest Score Recorded</span>
+                            <h3 class="fw-extrabold mb-0 text-success" th:text="${highestMarks} + ' Marks'">0.0 Marks</h3>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">Average Class Score</span>
+                            <h3 class="fw-extrabold mb-0 text-primary" th:text="${averageMarks} + ' Marks'">0.0 Marks</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABBED NAVIGATION -->
+        <div class="d-flex align-items-center gap-3 border-bottom mb-4" style="border-color: var(--border-color) !important;">
+            <button class="tab-btn active" id="tab-papers-btn" onclick="switchTab('papers')">📂 Uploaded Exam Papers History</button>
+            <button class="tab-btn" id="tab-students-btn" onclick="switchTab('students')">🎓 Student Examination Records</button>
+        </div>
+
+        <!-- TAB 1: UPLOADED EXAM PAPERS -->
+        <div id="tab-papers" class="tab-content">
+            <!-- Filter Card -->
+            <div class="card border-0 p-4 mb-4" style="border-radius: 16px; background: var(--card-bg); box-shadow: var(--card-shadow);">
+                <h5 class="fw-bold mb-3" style="color: var(--text-primary);"><i class="bi bi-funnel me-1"></i> Filter Exam Papers</h5>
+                <form id="papers-filter-form" onsubmit="event.preventDefault(); loadPapers();">
+                    <div class="row g-3">
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Academic Year</label>
+                            <select class="form-select" name="academicYear">
+                                <option value="">All Years</option>
+                                <option th:each="yr : ${academicYears}" th:value="${yr}" th:text="${yr}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Batch</label>
+                            <select class="form-select" name="batch">
+                                <option value="">All Batches</option>
+                                <option th:each="b : ${batches}" th:value="${b}" th:text="${b}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Semester</label>
+                            <select class="form-select" name="semester">
+                                <option value="">All Semesters</option>
+                                <option th:each="s : ${semesters}" th:value="${s}" th:text="${s}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Subject</label>
+                            <select class="form-select" name="subject">
+                                <option value="">All Subjects</option>
+                                <option th:each="sub : ${subjects}" th:value="${sub}" th:text="${sub}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Division</label>
+                            <select class="form-select" name="division">
+                                <option value="">All Divisions</option>
+                                <option th:each="d : ${divisions}" th:value="${d}" th:text="${d}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Upload Date</label>
+                            <input type="date" class="form-control" name="uploadDate">
+                        </div>
+                        <div class="col-12 d-flex gap-2 align-items-center mt-3 flex-wrap">
+                            <input type="text" class="form-control" style="max-width: 300px;" name="searchQuery" placeholder="Search by subject, batch, sem...">
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-search me-1"></i> Search</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetForm('papers-filter-form'); loadPapers();">Clear</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table Container -->
+            <div class="card border-0 p-0 position-relative" style="border-radius: 16px; background: var(--card-bg); box-shadow: var(--card-shadow); overflow: hidden;">
+                <div class="loading-overlay d-none" id="papers-loading">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table align-middle mb-0">
+                        <thead class="sticky-thead bg-light text-uppercase">
+                            <tr>
+                                <th class="ps-4">Paper Details</th>
+                                <th>Subject</th>
+                                <th>Semester & Batch</th>
+                                <th>Upload Info</th>
+                                <th>Questions / Marks</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="papers-table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: STUDENT EXAMINATION RECORDS -->
+        <div id="tab-students" class="tab-content d-none">
+            <!-- Filter Card -->
+            <div class="card border-0 p-4 mb-4" style="border-radius: 16px; background: var(--card-bg); box-shadow: var(--card-shadow);">
+                <h5 class="fw-bold mb-3" style="color: var(--text-primary);"><i class="bi bi-funnel me-1"></i> Filter Student Records</h5>
+                <form id="students-filter-form" onsubmit="event.preventDefault(); loadStudents();">
+                    <div class="row g-3">
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Academic Year</label>
+                            <select class="form-select" name="academicYear">
+                                <option value="">All Years</option>
+                                <option th:each="yr : ${academicYears}" th:value="${yr}" th:text="${yr}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Batch</label>
+                            <select class="form-select" name="batch">
+                                <option value="">All Batches</option>
+                                <option th:each="b : ${batches}" th:value="${b}" th:text="${b}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Semester</label>
+                            <select class="form-select" name="semester">
+                                <option value="">All Semesters</option>
+                                <option th:each="s : ${semesters}" th:value="${s}" th:text="${s}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Subject</label>
+                            <select class="form-select" name="subject">
+                                <option value="">All Subjects</option>
+                                <option th:each="sub : ${subjects}" th:value="${sub}" th:text="${sub}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Division</label>
+                            <select class="form-select" name="division">
+                                <option value="">All Divisions</option>
+                                <option th:each="d : ${divisions}" th:value="${d}" th:text="${d}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small text-muted">Exam Name</label>
+                            <select class="form-select" name="examName">
+                                <option value="">All Exams</option>
+                                <option th:each="ex : ${examNames}" th:value="${ex}" th:text="${ex}"></option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-12 d-flex gap-2 align-items-center mt-3 flex-wrap">
+                            <input type="text" class="form-control" style="max-width: 300px;" name="searchQuery" placeholder="Search by student name, enrollment, GR...">
+                            <select class="form-select" style="max-width: 180px;" name="sortBy" onchange="loadStudents();">
+                                <option value="studentName">Sort by Name</option>
+                                <option value="highestMarks">Highest Marks</option>
+                                <option value="lowestMarks">Lowest Marks</option>
+                                <option value="rollNo">Roll Number</option>
+                                <option value="percentage">Percentage</option>
+                                <option value="uploadDate">Submission Time</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-search me-1"></i> Search</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetForm('students-filter-form'); loadStudents();">Clear</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- EXPORT ACTIONS BAR -->
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <h6 class="fw-bold mb-0 text-uppercase" style="font-size: 11px; letter-spacing: 0.5px; color: var(--text-muted);">EXPORTS & OPTIONS</h6>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportData('excel')"><i class="bi bi-file-earmark-excel-fill"></i> Export Excel</button>
+                    <button class="btn btn-sm btn-outline-success" onclick="exportData('csv')"><i class="bi bi-file-earmark-spreadsheet-fill"></i> Export CSV</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="exportData('pdf')"><i class="bi bi-file-earmark-pdf-fill"></i> Export PDF</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer-fill"></i> Print Table</button>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="card border-0 p-0 position-relative" style="border-radius: 16px; background: var(--card-bg); box-shadow: var(--card-shadow); overflow: hidden;">
+                <div class="loading-overlay d-none" id="students-loading">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table align-middle mb-0">
+                        <thead class="sticky-thead bg-light text-uppercase">
+                            <tr>
+                                <th class="ps-4">Roll / Name</th>
+                                <th>Enrollment & GR No</th>
+                                <th>Batch / Sem</th>
+                                <th>Subject</th>
+                                <th>Score (Pct%)</th>
+                                <th>Submission Info</th>
+                                <th>Evaluation</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- STUDENT DETAILS MODAL -->
+        <div class="modal fade" id="studentDetailsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content" style="border-radius: 16px; border: none; background: var(--card-bg); box-shadow: var(--card-shadow-hover);">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="fw-bold modal-title" style="color: var(--text-primary);"><i class="bi bi-person-lines-fill me-1"></i> Student Examination Record</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Profile Card Grid -->
+                        <div class="row g-3 mb-4">
+                            <!-- Left Block: Profile Info -->
+                            <div class="col-md-6 border-end" style="border-color: var(--border-color) !important;">
+                                <h6 class="fw-bold text-uppercase text-primary mb-2" style="font-size: 11px; letter-spacing: 0.5px;">Student Profile</h6>
+                                <table class="table table-sm table-borderless align-middle mb-0">
+                                    <tr>
+                                        <td class="text-muted py-1" style="width: 120px;">Student Name</td>
+                                        <td class="fw-bold text-dark py-1" id="m-student-name">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-1">Enrollment No</td>
+                                        <td class="fw-bold text-dark py-1" id="m-enrollment-no">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-1">GR Number</td>
+                                        <td class="fw-bold text-dark py-1" id="m-gr-no">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-1">Roll / Div</td>
+                                        <td class="fw-bold text-dark py-1" id="m-roll-div">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-1">Batch / Sem</td>
+                                        <td class="fw-bold text-dark py-1" id="m-batch-sem">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <!-- Right Block: Exam Summary Info -->
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-uppercase text-primary mb-2" style="font-size: 11px; letter-spacing: 0.5px;">Examination Details</h6>
+                                <table class="table table-sm table-borderless align-middle mb-0">
+                                    <tr>
+                                        <td class="text-muted py-1" style="width: 120px;">Subject Name</td>
+                                        <td class="fw-bold text-dark py-1" id="m-subject">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-1">Exam / Duration</td>
+                                        <td class="fw-bold text-dark py-1" id="m-duration">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-1">Submission Time</td>
+                                        <td class="fw-bold text-dark py-1" id="m-sub-time">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-1">Evaluation Date</td>
+                                        <td class="fw-bold text-dark py-1" id="m-eval-date">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-1">Score Obtained</td>
+                                        <td class="fw-bold text-dark py-1" id="m-score">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Question wise Marks Table -->
+                        <h6 class="fw-bold text-uppercase text-primary mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Question-wise Marks</h6>
+                        <div class="table-responsive rounded-3 border" style="border-color: var(--border-color) !important;">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-3" style="width: 50px;">Q.No</th>
+                                        <th>Question Details</th>
+                                        <th>Max</th>
+                                        <th>Scored</th>
+                                        <th class="pe-3">Feedback</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="m-questions-body">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <a id="m-download-ans-btn" href="#" class="btn btn-outline-primary"><i class="bi bi-file-earmark-arrow-down-fill me-1"></i> Download Answer Sheet</a>
+                        <a id="m-download-result-btn" href="#" class="btn btn-primary"><i class="bi bi-patch-check-fill me-1"></i> Download Result PDF</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- UI/UX Logic Script -->
+    <script>
+        let currentTab = 'papers';
+        let detailModal;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            detailModal = new bootstrap.Modal(document.getElementById('studentDetailsModal'));
+            loadPapers();
+        });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('d-none'));
+
+            if (tab === 'papers') {
+                document.getElementById('tab-papers-btn').classList.add('active');
+                document.getElementById('tab-papers').classList.remove('d-none');
+                loadPapers();
+            } else {
+                document.getElementById('tab-students-btn').classList.add('active');
+                document.getElementById('tab-students').classList.remove('d-none');
+                loadStudents();
+            }
+        }
+
+        function resetForm(formId) {
+            document.getElementById(formId).reset();
+        }
+
+        // Section 1: Load papers history via AJAX
+        function loadPapers() {
+            const loader = document.getElementById('papers-loading');
+            loader.classList.remove('d-none');
+
+            const form = document.getElementById('papers-filter-form');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData).toString();
+
+            fetch(`/admin/history-records/search-papers?${params}`)
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('papers-table-body');
+                    tbody.innerHTML = '';
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <i class="bi bi-file-earmark-x fs-1 text-muted mb-2 d-block"></i>
+                                    <span class="text-muted d-block">No exam papers match your selected filters.</span>
+                                </td>
+                            </tr>`;
+                        return;
+                    }
+
+                    data.forEach(p => {
+                        let badgeClass = 'status-scheduled';
+                        if (p.status === 'Active') badgeClass = 'status-active';
+                        if (p.status === 'Completed') badgeClass = 'status-completed';
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="ps-4">
+                                <span class="fw-bold text-dark d-block">${p.subject}</span>
+                                <small class="text-muted">${p.batch} | Division ${p.division}</small>
+                            </td>
+                            <td>${p.subject}</td>
+                            <td>
+                                <span class="d-block">${p.semester}</span>
+                                <small class="text-muted">${p.batch}</small>
+                            </td>
+                            <td>
+                                <span class="d-block">${p.uploadDate}</span>
+                                <small class="text-muted">By ${p.uploadedBy}</small>
+                            </td>
+                            <td>
+                                <span class="d-block">${p.totalQuestions} Questions</span>
+                                <small class="text-muted">${p.totalMarks} Marks | ${p.duration} mins</small>
+                            </td>
+                            <td>
+                                <span class="status-badge ${badgeClass}">${p.status}</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <a class="btn btn-outline-secondary" href="/admin/paper/${p.id}/preview" title="View Paper"><i class="bi bi-eye"></i></a>
+                                    <a class="btn btn-outline-secondary" href="/admin/history-records/paper/${p.id}/download" title="Download Original PDF"><i class="bi bi-file-pdf"></i></a>
+                                    <a class="btn btn-outline-secondary" href="/admin/paper/${p.id}/confirm-questions" title="View Extracted Questions"><i class="bi bi-list-task"></i></a>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => {
+                    console.error('Error fetching papers history:', err);
+                })
+                .finally(() => {
+                    loader.classList.add('d-none');
+                });
+        }
+
+        // Section 2: Load students examination records via AJAX
+        function loadStudents() {
+            const loader = document.getElementById('students-loading');
+            loader.classList.remove('d-none');
+
+            const form = document.getElementById('students-filter-form');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData).toString();
+
+            fetch(`/admin/history-records/search-students?${params}`)
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('students-table-body');
+                    tbody.innerHTML = '';
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="9" class="empty-state">
+                                    <i class="bi bi-people-fill fs-1 text-muted mb-2 d-block"></i>
+                                    <span class="text-muted d-block">No student examination records match your selected filters.</span>
+                                </td>
+                            </tr>`;
+                        return;
+                    }
+
+                    data.forEach(r => {
+                        let statusClass = 'result-pending';
+                        if (r.resultStatus === 'PASSED') statusClass = 'result-pass';
+                        if (r.resultStatus === 'FAILED') statusClass = 'result-fail';
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="ps-4">
+                                <span class="fw-bold text-dark d-block">${r.studentName}</span>
+                                <small class="text-muted">Roll: ${r.rollNo} | Div: ${r.division}</small>
+                            </td>
+                            <td>
+                                <span class="d-block">${r.enrollmentNo}</span>
+                                <small class="text-muted">GR: ${r.grNo}</small>
+                            </td>
+                            <td>
+                                <span class="d-block">${r.batch}</span>
+                                <small class="text-muted">${r.semester}</small>
+                            </td>
+                            <td>${r.subject}</td>
+                            <td>
+                                <span class="fw-bold d-block">${r.obtainedMarks} / ${r.totalMarks}</span>
+                                <small class="text-muted">${r.percentage}%</small>
+                            </td>
+                            <td>${r.submissionTime}</td>
+                            <td>
+                                <span class="badge ${r.evaluationStatus === 'Checked' ? 'bg-success' : 'bg-warning'}">${r.evaluationStatus}</span>
+                            </td>
+                            <td>
+                                <span class="status-badge ${statusClass}">${r.resultStatus}</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="openDetails(${r.submissionId}, '${r.type}')">View Details</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => {
+                    console.error('Error fetching students records:', err);
+                })
+                .finally(() => {
+                    loader.classList.add('d-none');
+                });
+        }
+
+        // Open details modal
+        function openDetails(submissionId, type) {
+            fetch(`/admin/history-records/student-details?submissionId=${submissionId}&type=${type}`)
+                .then(res => res.json())
+                .then(d => {
+                    // Profile Info
+                    document.getElementById('m-student-name').textContent = d.profile.name;
+                    document.getElementById('m-enrollment-no').textContent = d.profile.enrollmentNo;
+                    document.getElementById('m-gr-no').textContent = d.profile.grNo;
+                    document.getElementById('m-roll-div').textContent = `${d.profile.rollNo} / Division ${d.profile.division}`;
+                    document.getElementById('m-batch-sem').textContent = `${d.profile.batch} / ${d.profile.semester}`;
+
+                    // Exam Info
+                    document.getElementById('m-subject').textContent = d.exam.subject;
+                    document.getElementById('m-duration').textContent = `${d.exam.examName} (${d.exam.duration} mins)`;
+                    document.getElementById('m-sub-time').textContent = d.exam.submissionTime;
+                    document.getElementById('m-eval-date').textContent = d.exam.evaluationDate;
+                    document.getElementById('m-score').textContent = `${d.exam.obtainedMarks} / ${d.exam.totalMarks} Marks (${d.exam.percentage}%) [${d.exam.resultStatus}]`;
+
+                    // Question-wise scores
+                    const tbody = document.getElementById('m-questions-body');
+                    tbody.innerHTML = '';
+
+                    d.questions.forEach((q, index) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="ps-3 fw-bold">${index + 1}</td>
+                            <td>
+                                <span class="fw-bold d-block mb-1 text-wrap">${q.questionText}</span>
+                                <small class="text-muted d-block text-wrap">Answer: <i>${q.studentAnswer || '[No response]'}</i></small>
+                            </td>
+                            <td>${q.maxMarks}</td>
+                            <td class="fw-bold text-primary">${q.marksObtained}</td>
+                            <td class="pe-3">${q.feedback}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Download Action URLs
+                    document.getElementById('m-download-ans-btn').href = `/admin/history-records/student/${submissionId}/answer-sheet?type=${type}`;
+                    document.getElementById('m-download-result-btn').href = `/admin/history-records/student/${submissionId}/result-pdf?type=${type}`;
+
+                    detailModal.show();
+                })
+                .catch(err => {
+                    console.error('Error fetching details:', err);
+                });
+        }
+
+        // Export Data Trigger
+        function exportData(format) {
+            const form = document.getElementById('students-filter-form');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData).toString();
+            window.location.href = `/admin/history-records/export/${format}?${params}`;
+        }
+    </script>
+</body>
+</html>

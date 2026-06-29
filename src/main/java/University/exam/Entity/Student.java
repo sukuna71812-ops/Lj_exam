@@ -42,6 +42,15 @@ public class Student {
     @jakarta.persistence.Column(name = "semester", length = 50)
     private String semester = "Semester 3";
 
+    @jakarta.persistence.Column(name = "gr_no", length = 50)
+    private String grNo;
+
+    @jakarta.persistence.Column(name = "batch", length = 50)
+    private String batch;
+
+    @jakarta.persistence.Column(name = "academic_year", length = 50)
+    private String academicYear;
+
     // Default Constructor
     public Student() {}
 
@@ -149,6 +158,30 @@ public class Student {
 
     public void setSemester(String semester) {
         this.semester = semester;
+    }
+
+    public String getGrNo() {
+        return (grNo == null || grNo.trim().isEmpty()) ? ("GR2025" + String.format("%03d", (rollNo != null ? rollNo : 1))) : grNo;
+    }
+
+    public void setGrNo(String grNo) {
+        this.grNo = grNo;
+    }
+
+    public String getBatch() {
+        return (batch == null || batch.trim().isEmpty()) ? "BCA" : batch;
+    }
+
+    public void setBatch(String batch) {
+        this.batch = batch;
+    }
+
+    public String getAcademicYear() {
+        return (academicYear == null || academicYear.trim().isEmpty()) ? "2025-26" : academicYear;
+    }
+
+    public void setAcademicYear(String academicYear) {
+        this.academicYear = academicYear;
     }
 
     // Static helper to match semesters robustly (e.g. comparing "3" and "Semester 3")

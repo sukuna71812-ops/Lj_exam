@@ -39,6 +39,12 @@ public class Paper {
     @jakarta.persistence.Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @jakarta.persistence.Column(name = "academic_year", length = 50)
+    private String academicYear;
+
+    @jakarta.persistence.Column(name = "division", length = 50)
+    private String division;
+
     @jakarta.persistence.Column(name = "manual_content", columnDefinition = "TEXT")
     private String manualContent;
 
@@ -99,5 +105,21 @@ public class Paper {
 
     public Admin getAdmin() { return admin; }
     public void setAdmin(Admin admin) { this.admin = admin; }
+
+    public String getAcademicYear() {
+        return (academicYear == null || academicYear.trim().isEmpty()) ? "2025-26" : academicYear;
+    }
+
+    public void setAcademicYear(String academicYear) {
+        this.academicYear = academicYear;
+    }
+
+    public String getDivision() {
+        return (division == null || division.trim().isEmpty()) ? "A" : division;
+    }
+
+    public void setDivision(String division) {
+        this.division = division;
+    }
 }
 

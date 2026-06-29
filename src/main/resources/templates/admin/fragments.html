@@ -449,6 +449,12 @@
                 </a>
             </li>
             <li>
+                <a th:href="@{/admin/history-records}" class="menu-item-link" th:classappend="${activeMenu == 'history-records'} ? 'active' : ''">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                    <span>📚 History & Records</span>
+                </a>
+            </li>
+            <li>
                 <a th:href="@{/admin/eligible-students}" class="menu-item-link" th:classappend="${activeMenu == 'eligible-students'} ? 'active' : ''">
                     <i class="bi bi-person-check-fill"></i>
                     <span>📋 Student Eligibility List</span>

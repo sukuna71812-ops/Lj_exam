@@ -166,6 +166,7 @@ public class AdminDashboardController {
 
         Map<Long, Long> eligibleStudentsMap = new HashMap<>();
         Map<Long, Long> attemptsMap = new HashMap<>();
+        Map<Long, Long> remainingSecondsMap = new HashMap<>();
 
         for (Paper p : papers) {
             String paperSem = p.getSemester();
@@ -187,6 +188,17 @@ public class AdminDashboardController {
                 }
             }
             attemptsMap.put(p.getId(), attemptsCount);
+
+            // Calculate remaining seconds timezone-agnostically on the server
+            long remaining = 0;
+            if ("ACTIVE".equals(p.getExamStatus()) && p.getActivationTime() != null && p.getExamDuration() != null) {
+                LocalDateTime endTime = p.getActivationTime().plusMinutes(p.getExamDuration());
+                remaining = java.time.Duration.between(LocalDateTime.now(), endTime).getSeconds();
+                if (remaining < 0) {
+                    remaining = 0;
+                }
+            }
+            remainingSecondsMap.put(p.getId(), remaining);
         }
 
         // Additional stats for the enhanced Result Management module
@@ -204,6 +216,7 @@ public class AdminDashboardController {
         model.addAttribute("exams", exams);
         model.addAttribute("eligibleStudentsMap", eligibleStudentsMap);
         model.addAttribute("attemptsMap", attemptsMap);
+        model.addAttribute("remainingSecondsMap", remainingSecondsMap);
         model.addAttribute("submissionsList", allSubmissions);
 
         model.addAttribute("totalStudentsCount", totalStudents);

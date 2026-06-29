@@ -37,3 +37,6 @@ build/
 .agents/
 .gemini/
 *.log
+*.class
+walkthrough.md
+task.md
