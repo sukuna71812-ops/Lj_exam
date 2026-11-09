@@ -9,3 +9,15 @@
 - [x] Connect REST API calls (`/events`, `/event/add`, `/toggle-complete`, `/delete`) for data state
 - [x] Implement room double-booking detection by appending room metadata inside the event description
 - [x] Verify Maven project compiles successfully
+
+# Tasks - Admin Navigation Bug Fixes
+- [x] Fix incorrect links on Dashboard (Total Students footer, Manage Students, Generate Report, System Settings)
+- [x] Add Student Management to sidebar navigation in fragments.html
+- [x] Verify project builds and compiles cleanly
+
+# Tasks - Student Delete Cascade Bug Fix
+- [x] Add deleteStudentCascade method to StudentService.java
+- [x] Update deleteStudent in AdminPagesController.java to use cascade deletion
+- [x] Verify compilation builds cleanly
+
+

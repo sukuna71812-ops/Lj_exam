@@ -46,3 +46,33 @@ The calendar page in the Spring Boot application (`calendar.html`) has been rewr
 ## Verification Status
 
 *   Running `.\mvnw.cmd compile` verifies that the Java project builds and compiles cleanly.
+
+---
+
+## 🛠️ Bug Fixes in Admin Navigation
+
+The following bugs in the admin navigation links have been fixed without changing the existing workflow:
+
+### 1. Admin Dashboard (`dashboard.html`)
+*   **[MODIFY] [dashboard.html](file:///c:/Users/Neetyam%20Patel/Downloads/exam/src/main/resources/templates/admin/dashboard.html)**:
+    *   Updated the **Total Students** card footer link from `/admin/results` to the correct student management URL `/admin/students`.
+    *   Updated the **Manage Students** Quick Action link from `/admin/results` to `/admin/students`.
+    *   Updated the **Generate Report** Quick Action link from `/admin/results` to the correct reports URL `/admin/reports`.
+    *   Updated the **System Settings** Quick Action link from `#` to the settings URL `/admin/settings`.
+
+### 2. Admin Sidebar Navigation Fragment (`fragments.html`)
+*   **[MODIFY] [fragments.html](file:///c:/Users/Neetyam%20Patel/Downloads/exam/src/main/resources/templates/admin/fragments.html)**:
+    *   Added **Student Management** to the sidebar navigation menu linking to `/admin/students` (which was previously orphaned and only accessible via direct URL manipulation or through the corrected dashboard links). This preserves the menu active state highlight for `activeMenu == 'students'`.
+
+---
+
+## 🔒 Student Deletion Cascade Constraint Bug Fix
+
+An `Internal Server Error (500)` occurred when attempting to delete a student due to foreign key constraint violations on dependent tables (such as `feedbacks`, `submissions`, `exam_attempts`, and `student_exam_activity`). This has been resolved:
+
+*   **[MODIFY] [StudentService.java](file:///c:/Users/Neetyam%20Patel/Downloads/exam/src/main/java/University/exam/service/StudentService.java)**:
+    *   Added a transactional method `deleteStudentCascade(Long id)` that systematically cleans up all dependent child records (Answers, Results, Submissions, Exam Attempts, Feedbacks, Active Sessions, Exam Violations, Paste Logs, and Activities) before deleting the student record from the `students` table.
+*   **[MODIFY] [AdminPagesController.java](file:///c:/Users/Neetyam%20Patel/Downloads/exam/src/main/java/University/exam/controller/AdminPagesController.java)**:
+    *   Autowired `StudentService` and updated the `/students/delete/{id}` POST mapping to invoke `studentService.deleteStudentCascade(id)` rather than using the raw `studentRepository.deleteById(id)`.
+
+
